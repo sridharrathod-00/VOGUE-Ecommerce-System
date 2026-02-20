@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><text x='50' y='70' font-size='60' text-anchor='middle' font-family='serif' font-weight='bold' fill='%23fff'>V</text></svg>">
+    <title>VOGUE | Update Product</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body { font-family: 'Inter', sans-serif; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+
+        .fade-in   { animation: fadeIn 1s ease-in both; }
+        .stagger-1 { animation: fadeIn 0.9s ease-in 0.10s both; }
+        .stagger-2 { animation: fadeIn 0.9s ease-in 0.20s both; }
+        .stagger-3 { animation: fadeIn 0.9s ease-in 0.30s both; }
+        .stagger-4 { animation: fadeIn 0.9s ease-in 0.40s both; }
+        .stagger-5 { animation: fadeIn 0.9s ease-in 0.50s both; }
+        .stagger-6 { animation: fadeIn 0.9s ease-in 0.60s both; }
+        .stagger-7 { animation: fadeIn 0.9s ease-in 0.70s both; }
+        .stagger-8 { animation: fadeIn 0.9s ease-in 0.80s both; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .nav-scroll {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255,255,255,0.95);
+        }
+
+        .gradient-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.65), transparent 60%);
+        }
+
+        /* Inputs — lift on focus like the card hover */
+        .form-input {
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+            outline: none;
+        }
+        .form-input:focus {
+            border-color: #000;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        /* Product selector card */
+        .product-select-wrap {
+            position: relative;
+        }
+        .product-select-wrap::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            height: 2px;
+            width: 0;
+            background: #000;
+            transition: width 0.4s ease;
+        }
+        .product-select-wrap:focus-within::after { width: 100%; }
+
+        /* Category cards — exact same pattern as home page shop grid */
+        .cat-card {
+            transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), box-shadow 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .cat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 32px rgba(0,0,0,0.12);
+        }
+        .cat-card img { transition: transform 0.7s cubic-bezier(0.4,0,0.2,1); }
+        .cat-card:hover img { transform: scale(1.1); }
+        .cat-overlay { transition: opacity 0.5s ease; }
+        .cat-card:hover .cat-hover-overlay { opacity: 0.2 !important; }
+        .cat-card:hover .cat-hover-label   { opacity: 1 !important; }
+        .cat-card.selected { outline: 3px solid #000; outline-offset: -3px; }
+        .cat-card.selected .cat-check { opacity: 1; transform: scale(1); }
+        .cat-check {
+            opacity: 0; transform: scale(0.7);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        /* Upload zone */
+        .upload-zone {
+            transition: border-color 0.3s, background 0.3s;
+            border: 2px dashed #d1d5db;
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #000;
+            background: #f9fafb;
+        }
+
+        /* Submit ripple */
+        .submit-btn {
+            position: relative; overflow: hidden;
+            transition: background 0.3s ease;
+        }
+        .submit-btn::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: rgba(255,255,255,0.15);
+            transform: scaleX(0); transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+        .submit-btn:hover::after { transform: scaleX(1); }
+
+        /* Pulse dot */
+        .pulse-dot::before {
+            content: '';
+            display: inline-block;
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #22c55e; margin-right: 6px;
+            animation: pulseDot 2s infinite;
+        }
+        @keyframes pulseDot {
+            0%,100% { opacity:1; transform:scale(1); }
+            50%      { opacity:.4; transform:scale(1.4); }
+        }
+
+        /* Product dropdown — custom styled */
+        .styled-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23000' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1rem;
+        }
+
+        /* Existing image preview */
+        #previewWrap { display:none; }
+        #existingWrap { display:block; }
+
+        /* Change indicator badge */
+        .changed-badge {
+            display: none;
+            font-size: 0.6rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            background: #000;
+            color: #fff;
+            padding: 2px 8px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        .changed-badge.show { display: inline-block; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+<!-- ─── NAVBAR ─── -->
+<nav id="navbar" class="fixed w-full z-50 flex items-center justify-between px-6 md:px-10 py-5 bg-white shadow-sm transition-all duration-300">
+    <div class="text-2xl md:text-3xl font-bold tracking-tighter text-black uppercase font-serif">
+        VOGUE<span class="text-gray-400">.</span>
+    </div>
+
+    <div class="hidden md:flex items-center space-x-2 text-xs uppercase tracking-[0.25em] text-gray-400 font-medium">
+        <span class="w-8 h-px bg-gray-300 inline-block"></span>
+        <span>Update Product</span>
+        <span class="w-8 h-px bg-gray-300 inline-block"></span>
+    </div>
+
+    <div class="flex items-center space-x-6">
+        <a th:href="@{/admin/dashboard}" class="hidden md:inline-flex items-center gap-2 text-sm uppercase tracking-wide font-medium hover:text-gray-500 transition group">
+            <svg class="w-4 h-4 group-hover:-translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Dashboard
+        </a>
+        <div class="hidden lg:flex items-center space-x-6 border-l pl-6 border-gray-200">
+            <span class="text-xs text-gray-500 uppercase tracking-widest pulse-dot">Admin</span>
+            <a th:href="@{/logout}" class="text-xs uppercase font-bold text-red-500 hover:text-red-700 transition">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<header class="relative h-[55vh] flex items-center justify-center bg-gray-900 overflow-hidden">
+    <div class="absolute inset-0 z-0">
+        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&q=80&w=2070"
+             alt="Update Product" class="w-full h-full object-cover opacity-55">
+        <div class="absolute inset-0 gradient-overlay"></div>
+    </div>
+    <div class="relative z-10 text-center text-white px-4 fade-in">
+        <p class="text-sm md:text-base tracking-[0.3em] uppercase mb-4 text-gray-300">Catalog Management</p>
+        <h1 class="text-5xl md:text-7xl font-serif mb-6 leading-tight">Update Product</h1>
+        <p class="text-lg md:text-xl tracking-widest uppercase font-light">Refine your collection</p>
+    </div>
+    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 text-white animate-bounce">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+        </svg>
+    </div>
+</header>
+
+<!-- ─── FORM ─── -->
+<section class="py-20 px-6 md:px-10 max-w-4xl mx-auto">
+
+    <!-- Section header -->
+    <div class="text-center mb-16 stagger-1">
+        <p class="text-sm tracking-[0.3em] uppercase text-gray-500 mb-3">Edit Entry</p>
+        <h2 class="text-4xl md:text-5xl font-serif mb-4">Product Details</h2>
+        <p class="text-gray-600 max-w-xl mx-auto">Select a product below, then update any fields you'd like to change</p>
+    </div>
+
+    <form th:action="@{/admin/update-product}"
+          method="post"
+          enctype="multipart/form-data"
+          id="updateForm">
+
+        <!-- ── PRODUCT SELECTOR ── -->
+        <div class="mb-10 stagger-2">
+            <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
+                Select Product <span class="text-red-500">*</span>
+            </label>
+            <div class="product-select-wrap bg-white border-2 border-gray-200">
+                <select name="id"
+                        id="productSelect"
+                        class="styled-select form-input w-full px-5 py-4 text-sm bg-transparent"
+                        required>
+                    <option value="">— Choose a product to edit —</option>
+                    <option th:each="p : ${products}"
+                            th:value="${p.id}"
+                            th:text="${p.name + ' · ' + p.category}"
+                            th:data-name="${p.name}"
+                            th:data-desc="${p.description}"
+                            th:data-price="${p.price}"
+                            th:data-qty="${p.quantity}"
+                            th:data-cat="${p.category}"
+                            th:data-img="${p.image}">
+                    </option>
+                </select>
+            </div>
+            <p class="text-xs text-gray-400 mt-2 tracking-wide">Fields will auto-fill with the selected product's current values</p>
+        </div>
+
+        <!-- ── DIVIDER ── -->
+        <div class="flex items-center gap-4 mb-10 stagger-2">
+            <div class="flex-1 h-px bg-gray-200"></div>
+            <span class="text-xs uppercase tracking-[0.2em] text-gray-400">Edit Fields</span>
+            <div class="flex-1 h-px bg-gray-200"></div>
+        </div>
+
+        <!-- ── NAME ── -->
+        <div class="mb-8 stagger-3">
+            <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
+                Product Name
+                <span id="nameBadge" class="changed-badge">Changed</span>
+            </label>
+            <input type="text"
+                   name="name"
+                   id="nameInput"
+                   placeholder="Enter new name"
+                   class="form-input w-full border-2 border-gray-200 bg-white px-5 py-4 text-sm">
+        </div>
+
+        <!-- ── DESCRIPTION ── -->
+        <div class="mb-8 stagger-3">
+            <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
+                Description
+                <span id="descBadge" class="changed-badge">Changed</span>
+            </label>
+            <textarea name="description"
+                      id="descInput"
+                      placeholder="Update description"
+                      rows="4"
+                      class="form-input w-full border-2 border-gray-200 bg-white px-5 py-4 text-sm resize-none"></textarea>
+        </div>
+
+        <!-- ── PRICE + QUANTITY ── -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 stagger-4">
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
+                    Price (₹)
+                    <span id="priceBadge" class="changed-badge">Changed</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-semibold select-none">₹</span>
+                    <input type="number"
+                           name="price"
+                           id="priceInput"
+                           step="0.01" min="0"
+                           placeholder="Update price"
+                           class="form-input w-full border-2 border-gray-200 bg-white pl-9 pr-5 py-4 text-sm">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
+                    Stock Quantity
+                    <span id="qtyBadge" class="changed-badge">Changed</span>
+                </label>
+                <input type="number"
+                       name="quantity"
+                       id="qtyInput"
+                       min="0"
+                       placeholder="Update quantity"
+                       class="form-input w-full border-2 border-gray-200 bg-white px-5 py-4 text-sm">
+            </div>
+        </div>
+
+        <!-- ── CATEGORY — same 3-col image grid as home page ── -->
+        <div class="mb-10 stagger-5">
+            <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 mb-6">
+                Category
+                <span id="catBadge" class="changed-badge">Changed</span>
+            </label>
+
+            <select name="category" id="categorySelect" class="sr-only">
+                <option value="">-- Select Category --</option>
+                <option value="MEN">Men</option>
+                <option value="WOMEN">Women</option>
+                <option value="KIDS">Kids</option>
+            </select>
+
+            <div class="grid grid-cols-3 gap-6">
+                <!-- Women -->
+                <div class="cat-card group" data-value="WOMEN">
+                    <div class="overflow-hidden bg-gray-100 aspect-[3/4] relative">
+                        <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover" alt="Women">
+                        <div class="cat-overlay cat-hover-overlay absolute inset-0 bg-black" style="opacity:0"></div>
+                        <div class="cat-overlay cat-hover-label absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent" style="opacity:0">
+                            <p class="text-white text-xs uppercase tracking-wider">Select →</p>
+                        </div>
+                        <div class="cat-check absolute top-3 right-3 bg-black text-white w-7 h-7 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <h3 class="text-sm font-serif font-semibold mb-1">Womenswear</h3>
+                        <p class="text-gray-500 text-xs">450+ Styles</p>
+                    </div>
+                </div>
+
+                <!-- Men -->
+                <div class="cat-card group" data-value="MEN">
+                    <div class="overflow-hidden bg-gray-100 aspect-[3/4] relative">
+                        <img src="https://images.unsplash.com/photo-1505022610485-0249ba5b3675?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover" alt="Men">
+                        <div class="cat-overlay cat-hover-overlay absolute inset-0 bg-black" style="opacity:0"></div>
+                        <div class="cat-overlay cat-hover-label absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent" style="opacity:0">
+                            <p class="text-white text-xs uppercase tracking-wider">Select →</p>
+                        </div>
+                        <div class="cat-check absolute top-3 right-3 bg-black text-white w-7 h-7 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <h3 class="text-sm font-serif font-semibold mb-1">Menswear</h3>
+                        <p class="text-gray-500 text-xs">320+ Styles</p>
+                    </div>
+                </div>
+
+                <!-- Kids -->
+                <div class="cat-card group" data-value="KIDS">
+                    <div class="overflow-hidden bg-gray-100 aspect-[3/4] relative">
+                        <img src="https://images.unsplash.com/photo-1542037104857-ffbb0b9155fb?auto=format&fit=crop&q=80&w=600" class="w-full h-full object-cover" alt="Kids">
+                        <div class="cat-overlay cat-hover-overlay absolute inset-0 bg-black" style="opacity:0"></div>
+                        <div class="cat-overlay cat-hover-label absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent" style="opacity:0">
+                            <p class="text-white text-xs uppercase tracking-wider">Select →</p>
+                        </div>
+                        <div class="cat-check absolute top-3 right-3 bg-black text-white w-7 h-7 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <h3 class="text-sm font-serif font-semibold mb-1">Kids Wear</h3>
+                        <p class="text-gray-500 text-xs">180+ Styles</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── IMAGE ── -->
+        <div class="mb-10 stagger-6">
+            <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
+                Product Image
+                <span id="imgBadge" class="changed-badge">New Image</span>
+            </label>
+
+            <!-- Existing image — same square crop as product grid -->
+            <div id="existingWrap">
+                <p class="text-xs text-gray-400 uppercase tracking-wider mb-3">Current Image</p>
+                <div class="overflow-hidden bg-gray-100 aspect-square max-w-[200px] mb-5">
+                    <img id="existingImg"
+                         src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=400"
+                         class="w-full h-full object-cover" alt="Current">
+                </div>
+            </div>
+
+            <!-- Upload zone -->
+            <label for="imageInput" class="upload-zone flex flex-col items-center justify-center py-10 cursor-pointer bg-white" id="uploadZone">
+                <svg class="w-9 h-9 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <p id="uploadLabel" class="text-sm text-gray-500 mb-1">Click to upload a new image, or drag & drop</p>
+                <p class="text-xs text-gray-400 uppercase tracking-wider">Leave empty to keep current image</p>
+                <input type="file" name="image" id="imageInput" accept="image/*" class="hidden">
+            </label>
+
+            <!-- New image preview -->
+            <div id="previewWrap" class="mt-5">
+                <p class="text-xs text-gray-400 uppercase tracking-wider mb-3">New Image Preview</p>
+                <div class="overflow-hidden bg-gray-100 aspect-square max-w-[200px]">
+                    <img id="previewImg" src="" alt="Preview" class="w-full h-full object-cover">
+                </div>
+                <button type="button" id="clearImg"
+                        class="mt-3 flex items-center gap-2 text-xs uppercase tracking-wider text-gray-500 hover:text-black transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Remove — revert to existing
+                </button>
+            </div>
+        </div>
+
+        <!-- ── ACTIONS ── -->
+        <div class="flex flex-col md:flex-row gap-4 stagger-7">
+            <button type="submit"
+                    class="submit-btn flex-1 bg-black text-white px-10 py-4 uppercase font-bold tracking-wider hover:bg-gray-900 transition">
+                <svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+                Update Product
+            </button>
+            <a th:href="@{/admin/products}"
+               class="flex-none border-2 border-gray-300 text-gray-700 px-10 py-4 uppercase font-bold tracking-wider hover:bg-gray-100 transition text-center">
+                View All Products
+            </a>
+            <a th:href="@{/admin/dashboard}"
+               class="flex-none border-2 border-gray-300 text-gray-700 px-10 py-4 uppercase font-bold tracking-wider hover:bg-gray-100 transition text-center">
+                Cancel
+            </a>
+        </div>
+
+    </form>
+</section>
+
+<!-- ─── FOOTER (identical to home page) ─── -->
+<footer class="bg-black text-white py-16 mt-8">
+    <div class="max-w-7xl mx-auto px-6 md:px-10">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div>
+                <h4 class="text-2xl font-serif mb-4">VOGUE.</h4>
+                <p class="text-gray-400 text-sm leading-relaxed">
+                    Redefining fashion with timeless elegance and modern sophistication.
+                </p>
+            </div>
+            <div>
+                <h5 class="uppercase text-sm font-semibold mb-4 tracking-wider">Admin</h5>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li><a th:href="@{/admin/dashboard}"   class="hover:text-white transition">Dashboard</a></li>
+                    <li><a th:href="@{/admin/add-product}" class="hover:text-white transition">Add Product</a></li>
+                    <li><a th:href="@{/admin/products}"    class="hover:text-white transition">View Products</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="uppercase text-sm font-semibold mb-4 tracking-wider">Store</h5>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li><a th:href="@{/}" class="hover:text-white transition">View Storefront</a></li>
+                    <li><a th:href="@{/category/Women}" class="hover:text-white transition">Women</a></li>
+                    <li><a th:href="@{/category/Men}"   class="hover:text-white transition">Men</a></li>
+                    <li><a th:href="@{/category/Kids}"  class="hover:text-white transition">Kids</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="uppercase text-sm font-semibold mb-4 tracking-wider">System</h5>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li class="text-green-400">● All Systems Active</li>
+                    <li>Version 2.0.1</li>
+                    <li>Season: Spring 2026</li>
+                    <li><a th:href="@{/logout}" class="text-red-400 hover:text-red-300 transition font-semibold uppercase text-xs tracking-wider">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm">
+            <p>&copy; 2026 VOGUE Fashion Admin. All rights reserved.</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" class="hover:text-white transition">Privacy Policy</a>
+                <a href="#" class="hover:text-white transition">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // ── Navbar scroll ──
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('nav-scroll', window.scrollY > 50);
+        navbar.classList.toggle('shadow-lg',  window.scrollY > 50);
+    });
+
+    // ── Auto-fill fields when product is selected ──
+    const productSelect = document.getElementById('productSelect');
+    const nameInput     = document.getElementById('nameInput');
+    const descInput     = document.getElementById('descInput');
+    const priceInput    = document.getElementById('priceInput');
+    const qtyInput      = document.getElementById('qtyInput');
+    const catSelect     = document.getElementById('categorySelect');
+    const existingImg   = document.getElementById('existingImg');
+
+    // Store original values to detect changes
+    let originalValues = {};
+
+    productSelect.addEventListener('change', function () {
+        const opt = this.options[this.selectedIndex];
+        if (!opt.value) return;
+
+        const name  = opt.dataset.name  || '';
+        const desc  = opt.dataset.desc  || '';
+        const price = opt.dataset.price || '';
+        const qty   = opt.dataset.qty   || '';
+        const cat   = opt.dataset.cat   || '';
+        const img   = opt.dataset.img   || '';
+
+        nameInput.value  = name;
+        descInput.value  = desc;
+        priceInput.value = price;
+        qtyInput.value   = qty;
+
+        // Update category cards
+        selectCategory(cat);
+        catSelect.value = cat;
+
+        // Update existing image
+        if (img) {
+            existingImg.src = '/images/' + img;
+            document.getElementById('existingWrap').style.display = 'block';
+        }
+
+        // Store originals for change detection
+        originalValues = { name, desc, price, qty, cat };
+
+        // Hide badges
+        ['nameBadge','descBadge','priceBadge','qtyBadge','catBadge'].forEach(id => {
+            document.getElementById(id).classList.remove('show');
+        });
+    });
+
+    // ── Change detection badges ──
+    function trackChange(inputId, badgeId, originalKey) {
+        document.getElementById(inputId).addEventListener('input', function () {
+            const changed = this.value !== String(originalValues[originalKey] || '');
+            document.getElementById(badgeId).classList.toggle('show', changed && !!productSelect.value);
+        });
+    }
+    trackChange('nameInput',  'nameBadge',  'name');
+    trackChange('descInput',  'descBadge',  'desc');
+    trackChange('priceInput', 'priceBadge', 'price');
+    trackChange('qtyInput',   'qtyBadge',   'qty');
+
+    // ── Category card selection ──
+    const catCards = document.querySelectorAll('.cat-card');
+
+    function selectCategory(value) {
+        catCards.forEach(c => c.classList.remove('selected'));
+        const match = [...catCards].find(c => c.dataset.value === value?.toUpperCase());
+        if (match) match.classList.add('selected');
+        catSelect.value = value?.toUpperCase() || '';
+    }
+
+    catCards.forEach(card => {
+        card.addEventListener('click', () => {
+            selectCategory(card.dataset.value);
+            // Change badge
+            const changed = card.dataset.value !== (originalValues.cat || '').toUpperCase();
+            document.getElementById('catBadge').classList.toggle('show', changed && !!productSelect.value);
+        });
+    });
+
+    // ── Image upload & preview ──
+    const imageInput  = document.getElementById('imageInput');
+    const previewWrap = document.getElementById('previewWrap');
+    const previewImg  = document.getElementById('previewImg');
+    const uploadLabel = document.getElementById('uploadLabel');
+    const uploadZone  = document.getElementById('uploadZone');
+    const clearBtn    = document.getElementById('clearImg');
+    const imgBadge    = document.getElementById('imgBadge');
+
+    imageInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        uploadLabel.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = e => {
+            previewImg.src = e.target.result;
+            previewWrap.style.display = 'block';
+            imgBadge.classList.add('show');
+        };
+        reader.readAsDataURL(file);
+    });
+
+    clearBtn.addEventListener('click', () => {
+        imageInput.value = '';
+        previewWrap.style.display = 'none';
+        previewImg.src = '';
+        uploadLabel.textContent = 'Click to upload a new image, or drag & drop';
+        imgBadge.classList.remove('show');
+    });
+
+    // Drag & drop
+    uploadZone.addEventListener('dragover',  e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    uploadZone.addEventListener('drop', e => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            imageInput.files = dt.files;
+            imageInput.dispatchEvent(new Event('change'));
+        }
+    });
+</script>
+
+</body>
+</html>

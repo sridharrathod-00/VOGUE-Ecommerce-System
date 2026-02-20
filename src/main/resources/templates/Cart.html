@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><text x='50' y='70' font-size='60' text-anchor='middle' font-family='serif' font-weight='bold' fill='%23fff'>V</text></svg>">
+    <title>VOGUE | Shopping Cart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --black: #0a0a0a;
+            --gray-light: #f5f4f1;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 300;
+            background: var(--gray-light);
+            color: var(--black);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .font-serif { font-family: 'Playfair Display', serif; }
+
+        /* ── NAV ── */
+        #navbar { transition: background 0.4s ease, padding 0.4s ease; }
+        .nav-scroll {
+            backdrop-filter: blur(14px);
+            background: rgba(250,250,248,0.96) !important;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+        .nav-link { position: relative; text-decoration: none; }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px; left: 0;
+            width: 0; height: 1px;
+            background: var(--black);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        /* ── CART ITEM ROW ── */
+        .cart-row {
+            transition: background 0.2s ease;
+        }
+        .cart-row:hover { background: #fafaf8; }
+
+        /* ── QTY BUTTONS ── */
+        .qty-btn {
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1.5px solid #e5e5e5;
+            font-size: 1rem; font-weight: 500;
+            transition: border-color 0.2s ease, background 0.2s ease;
+            text-decoration: none;
+            color: var(--black);
+        }
+        .qty-btn:hover { border-color: var(--black); background: var(--black); color: white; }
+
+        /* ── COUPON INPUT ── */
+        .coupon-input:focus { outline: none; border-color: var(--black); }
+
+        /* ── CHECKOUT BTN ── */
+        .btn-checkout {
+            position: relative; overflow: hidden;
+            transition: color 0.3s ease;
+        }
+        .btn-checkout::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: #1a1a1a;
+            transform: scaleX(0); transform-origin: left;
+            transition: transform 0.35s ease;
+            z-index: 0;
+        }
+        .btn-checkout:hover::before { transform: scaleX(1); }
+        .btn-checkout span { position: relative; z-index: 1; }
+
+        /* ── SECTION RULE ── */
+        .section-rule { width: 40px; height: 1px; background: var(--black); margin-bottom: 1rem; }
+
+        /* ── SCROLL REVEAL ── */
+        .reveal {
+            opacity: 0; transform: translateY(24px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.visible { opacity: 1; transform: none; }
+        .reveal-d1 { transition-delay: 0.15s; }
+    </style>
+</head>
+<body>
+
+<!-- ─── NAVBAR ─── -->
+<nav id="navbar" class="fixed w-full z-50 flex items-center justify-between px-6 md:px-10 py-6 bg-white transition-all duration-300">
+    <a th:href="@{/}" class="text-2xl md:text-3xl font-bold tracking-tighter text-black uppercase font-serif">
+        VOGUE<span class="text-gray-300">.</span>
+    </a>
+
+    <div class="hidden md:flex space-x-8 text-xs font-medium uppercase tracking-[0.15em]">
+        <a th:href="@{/category/Women}" class="nav-link hover:text-gray-500 transition">Women</a>
+        <a th:href="@{/category/Men}"   class="nav-link hover:text-gray-500 transition">Men</a>
+        <a th:href="@{/category/Kids}"  class="nav-link hover:text-gray-500 transition">Kids</a>
+    </div>
+
+    <div class="flex items-center space-x-5">
+        <a th:href="@{/favourite/view}" title="Favorites" class="group">
+            <svg class="w-5 h-5 text-gray-500 group-hover:text-red-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+        </a>
+        <a th:href="@{/cart/view}" title="Cart" class="relative group">
+            <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+        </a>
+        <a th:href="@{/}" class="hidden lg:inline text-[11px] uppercase tracking-[0.15em] font-medium hover:text-gray-500 transition border-b border-transparent hover:border-black pb-0.5">
+            ← Home
+        </a>
+    </div>
+</nav>
+
+<!-- ─── PAGE HEADER STRIP (mirrors "Limited Edition" banner) ─── -->
+<div class="bg-black text-white pt-28 pb-12 px-6 text-center">
+    <p class="text-[11px] tracking-[0.4em] uppercase text-gray-400 mb-3">Your Selection</p>
+    <h1 class="font-serif text-5xl md:text-6xl font-black mb-3">Shopping Cart</h1>
+    <p class="text-xs tracking-[0.25em] uppercase text-gray-400">Review your items before checkout</p>
+</div>
+
+<!-- ─── BREADCRUMB ─── -->
+<div class="px-6 md:px-10 max-w-7xl mx-auto pt-6 pb-0">
+    <p class="text-[11px] uppercase tracking-[0.2em] text-gray-400">
+        <a th:href="@{/}" class="hover:text-black transition">Home</a>
+        <span class="mx-2 text-gray-300">/</span>
+        <span class="text-gray-600">Cart</span>
+    </p>
+</div>
+
+<!-- ─── MAIN CONTENT ─── -->
+<main class="max-w-7xl mx-auto px-6 md:px-10 py-12">
+    <div class="grid md:grid-cols-3 gap-8 items-start">
+
+        <!-- ── LEFT: CART ITEMS ── -->
+        <div class="md:col-span-2 reveal">
+
+            <!-- Empty Cart -->
+            <div th:if="${cart == null || cart.items == null || #lists.isEmpty(cart.items)}"
+                 class="bg-white py-24 text-center">
+                <svg class="w-16 h-16 text-gray-200 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                </svg>
+                <p class="font-serif text-2xl mb-3">Your Cart is Empty</p>
+                <p class="text-gray-400 text-sm mb-8">Looks like you haven't added anything yet.</p>
+                <a th:href="@{/}" class="inline-block bg-black text-white text-xs uppercase tracking-[0.2em] font-semibold px-10 py-4 hover:bg-gray-800 transition">
+                    Continue Shopping
+                </a>
+            </div>
+
+            <!-- Cart Items -->
+            <div th:if="${cart != null && cart.items != null && !#lists.isEmpty(cart.items)}"
+                 class="bg-white">
+
+                <!-- Header row -->
+                <div class="hidden md:grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-100">
+                    <div class="col-span-6">
+                        <p class="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-medium">Product</p>
+                    </div>
+                    <div class="col-span-2 text-center">
+                        <p class="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-medium">Price</p>
+                    </div>
+                    <div class="col-span-2 text-center">
+                        <p class="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-medium">Qty</p>
+                    </div>
+                    <div class="col-span-2 text-right">
+                        <p class="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-medium">Total</p>
+                    </div>
+                </div>
+
+                <!-- Each item -->
+                <div th:each="item : ${cart.items}"
+                     class="cart-row grid grid-cols-12 gap-4 items-center px-6 py-6 border-b border-gray-100">
+
+                    <!-- Name + remove -->
+                    <div class="col-span-12 md:col-span-6">
+                        <h3 class="font-medium text-sm mb-1" th:text="${item.product.name}">Product Name</h3>
+                        <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-3" th:text="${item.product.category}">Category</p>
+                        <a th:href="@{/cart/remove/{id}(id=${item.product.id})}"
+                           class="text-[10px] uppercase tracking-wider text-gray-400 hover:text-red-500 transition underline underline-offset-2">
+                            Remove
+                        </a>
+                    </div>
+
+                    <!-- Unit price -->
+                    <div class="col-span-4 md:col-span-2 text-left md:text-center">
+                        <p class="text-sm font-medium">₹<span th:text="${item.product.price}">0</span></p>
+                    </div>
+
+                    <!-- Qty controls -->
+                    <div class="col-span-4 md:col-span-2 flex items-center justify-start md:justify-center gap-2">
+                        <a th:href="@{/cart/decrease/{id}(id=${item.product.id})}" class="qty-btn">−</a>
+                        <span class="text-sm font-semibold w-6 text-center" th:text="${item.quantity}">1</span>
+                        <a th:href="@{/cart/increase/{id}(id=${item.product.id})}" class="qty-btn">+</a>
+                    </div>
+
+                    <!-- Line total -->
+                    <div class="col-span-4 md:col-span-2 text-right">
+                        <p class="font-semibold text-sm">₹<span th:text="${item.product.price * item.quantity}">0</span></p>
+                    </div>
+                </div>
+
+                <!-- Clear cart -->
+                <div class="px-6 py-4">
+                    <a th:href="@{/cart/clear}"
+                       class="text-[11px] uppercase tracking-[0.15em] text-gray-400 hover:text-red-500 transition underline underline-offset-2">
+                        Clear Cart
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── RIGHT: ORDER SUMMARY ── -->
+        <div class="bg-white p-8 sticky top-28 reveal reveal-d1">
+
+            <div class="section-rule"></div>
+            <p class="text-[11px] uppercase tracking-[0.25em] text-gray-400 mb-6">Order Summary</p>
+
+            <div class="space-y-4 text-sm mb-6">
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Subtotal</span>
+                    <span class="font-medium">₹<span th:text="${total}">0</span></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-500">Shipping</span>
+                    <span class="font-medium">₹50</span>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-4 mb-8">
+                <div class="flex justify-between items-baseline">
+                    <span class="text-xs uppercase tracking-wider text-gray-500">Total</span>
+                    <span class="font-serif text-2xl font-bold">₹<span th:text="${total + 50}">50</span></span>
+                </div>
+            </div>
+
+            <!-- Coupon -->
+            <div class="mb-6">
+                <p class="text-[11px] uppercase tracking-[0.2em] text-gray-400 mb-3">Coupon Code</p>
+                <div class="flex gap-0">
+                    <input type="text"
+                           placeholder="Enter code"
+                           class="coupon-input flex-1 border-2 border-gray-200 border-r-0 px-4 py-3 text-xs focus:border-black transition">
+                    <button class="bg-black text-white text-[10px] uppercase tracking-wider font-semibold px-5 py-3 hover:bg-gray-800 transition whitespace-nowrap">
+                        Apply
+                    </button>
+                </div>
+            </div>
+
+            <!-- Checkout -->
+            <a th:href="@{/cart/checkout}"
+               class="btn-checkout block text-center bg-black text-white text-xs uppercase tracking-[0.2em] font-semibold py-4">
+                <span>Proceed to Checkout →</span>
+            </a>
+
+            <!-- Continue shopping -->
+            <a th:href="@{/}"
+               class="block text-center text-[11px] uppercase tracking-[0.15em] text-gray-400 hover:text-black transition mt-4 underline underline-offset-2">
+                Continue Shopping
+            </a>
+        </div>
+
+    </div>
+</main>
+
+<!-- ─── FOOTER — identical to home page ─── -->
+<footer class="bg-black text-white py-20 mt-8">
+    <div class="max-w-7xl mx-auto px-6 md:px-10">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+            <div>
+                <h4 class="text-xl font-serif font-bold mb-5">VOGUE<span class="text-gray-600">.</span></h4>
+                <p class="text-gray-500 text-xs leading-relaxed">
+                    Redefining fashion with timeless elegance and modern sophistication.
+                </p>
+            </div>
+            <div>
+                <h5 class="text-[10px] uppercase tracking-[0.25em] font-semibold mb-5 text-gray-400">Shop</h5>
+                <ul class="space-y-3 text-gray-500 text-xs">
+                    <li><a th:href="@{/category/Women}" class="hover:text-white transition">Women</a></li>
+                    <li><a th:href="@{/category/Men}"   class="hover:text-white transition">Men</a></li>
+                    <li><a th:href="@{/category/Kids}"  class="hover:text-white transition">Kids</a></li>
+                    <li><a href="#" class="hover:text-white transition">Sale</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="text-[10px] uppercase tracking-[0.25em] font-semibold mb-5 text-gray-400">Company</h5>
+                <ul class="space-y-3 text-gray-500 text-xs">
+                    <li><a href="#" class="hover:text-white transition">About Us</a></li>
+                    <li><a href="#" class="hover:text-white transition">Careers</a></li>
+                    <li><a href="#" class="hover:text-white transition">Sustainability</a></li>
+                    <li><a href="#" class="hover:text-white transition">Contact</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="text-[10px] uppercase tracking-[0.25em] font-semibold mb-5 text-gray-400">Follow Us</h5>
+                <div class="flex flex-col space-y-3 text-gray-500 text-xs">
+                    <a href="#" class="hover:text-white transition">Instagram</a>
+                    <a href="#" class="hover:text-white transition">Facebook</a>
+                    <a href="#" class="hover:text-white transition">Twitter</a>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-600 text-xs">
+            <p>&copy; 2026 VOGUE Fashion. All rights reserved.</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" class="hover:text-white transition">Privacy Policy</a>
+                <a href="#" class="hover:text-white transition">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // ── Navbar scroll ──
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('nav-scroll', window.scrollY > 60);
+    }, { passive: true });
+
+    // ── Scroll reveal ──
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer  = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+        });
+    }, { threshold: 0.05 });
+    revealEls.forEach(el => {
+        if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('visible');
+        else observer.observe(el);
+    });
+</script>
+
+</body>
+</html>

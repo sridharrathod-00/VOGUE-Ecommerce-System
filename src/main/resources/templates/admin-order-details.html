@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Order Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+
+<div class="max-w-5xl mx-auto mt-10 bg-white p-8 shadow rounded">
+	<div th:if="${error}" 
+	     class="bg-red-100 text-red-700 p-3 mb-4 rounded">
+	    <span th:text="${error}"></span>
+	</div>
+
+    <h2 class="text-2xl font-bold mb-6">
+        Order Details - ID <span th:text="${order.id}"></span>
+    </h2>
+
+    <div class="mb-6">
+        <p><strong>User:</strong> <span th:text="${order.user.name}"></span></p>
+        <p><strong>Date:</strong> <span th:text="${order.orderDate}"></span></p>
+        <p><strong>Status:</strong> <span th:text="${order.status}"></span></p>
+		<p><strong>Location:</strong> <span th:text="${order.fullAddress}"></span></p>
+        <p><strong>Total:</strong> ₹<span th:text="${order.totalAmount}"></span></p>
+    </div>
+
+    <h3 class="text-xl font-semibold mb-3">Products</h3>
+
+    <table class="w-full border">
+        <thead class="bg-gray-200">
+            <tr>
+                <th class="p-2 border">Product</th>
+                <th class="p-2 border">Price</th>
+                <th class="p-2 border">Quantity</th>
+                <th class="p-2 border">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="item : ${order.items}">
+                <td class="p-2 border" th:text="${item.product.name}"></td>
+                <td class="p-2 border">₹<span th:text="${item.price}"></span></td>
+                <td class="p-2 border" th:text="${item.quantity}"></td>
+                <td class="p-2 border">
+                    ₹<span th:text="${item.price * item.quantity}"></span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="mt-6">
+        <a href="/admin/orders"
+           class="bg-gray-800 text-white px-4 py-2 rounded">
+            Back to Orders
+        </a>
+    </div>
+
+</div>
+
+</body>
+</html>

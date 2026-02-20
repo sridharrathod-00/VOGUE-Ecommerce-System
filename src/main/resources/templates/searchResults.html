@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><text x='50' y='70' font-size='60' text-anchor='middle' font-family='serif' font-weight='bold' fill='%23fff'>V</text></svg>">
+    <title th:text="'VOGUE | Search: ' + ${keyword}">VOGUE | Search</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --black: #0a0a0a;
+            --gray-light: #f5f4f1;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 300;
+            background: var(--gray-light);
+            color: var(--black);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .font-serif { font-family: 'Playfair Display', serif; }
+
+        /* ── NAV ── */
+        #navbar { transition: background 0.4s ease, padding 0.4s ease; }
+        .nav-scroll {
+            backdrop-filter: blur(14px);
+            background: rgba(250,250,248,0.96) !important;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+        .nav-link { position: relative; text-decoration: none; }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px; left: 0;
+            width: 0; height: 1px;
+            background: var(--black);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        /* ── SEARCH INPUT ── */
+        .search-input { transition: border-color 0.3s ease; outline: none; }
+        .search-input:focus { border-color: white; }
+
+        /* ── PRODUCT CARDS — identical to home featured items ── */
+        .product-card { transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); }
+        .product-card:hover { transform: translateY(-8px); }
+        .product-img  { transition: transform 0.6s cubic-bezier(0.4,0,0.2,1); }
+        .product-card:hover .product-img { transform: scale(1.06); }
+        .quick-view {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0; transform: translateY(6px);
+        }
+        .product-card:hover .quick-view { opacity: 1; transform: translateY(0); }
+
+        /* ── KEYWORD HIGHLIGHT ── */
+        .keyword-tag {
+            display: inline-block;
+            border: 1.5px solid rgba(255,255,255,0.25);
+            padding: 2px 12px;
+            font-style: italic;
+        }
+
+        /* ── CTA BUTTON ── */
+        .btn-shop {
+            position: relative; overflow: hidden;
+            transition: color 0.3s ease;
+        }
+        .btn-shop::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: var(--black);
+            transform: scaleX(0); transform-origin: left;
+            transition: transform 0.35s ease;
+            z-index: 0;
+        }
+        .btn-shop:hover::before { transform: scaleX(1); }
+        .btn-shop:hover { color: white; }
+        .btn-shop span { position: relative; z-index: 1; }
+
+        /* ── SECTION RULE ── */
+        .section-rule { width: 40px; height: 1px; background: var(--black); margin: 0 auto 1rem; }
+
+        /* ── FILTER PILLS ── */
+        .filter-pill { transition: all 0.25s ease; cursor: pointer; }
+        .filter-pill:hover  { background: var(--black); color: white; }
+        .filter-pill.active { background: var(--black); color: white; }
+
+        /* ── SCROLL REVEAL ── */
+        .reveal {
+            opacity: 0; transform: translateY(24px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.visible { opacity: 1; transform: none; }
+        .reveal-d1 { transition-delay: 0.10s; }
+        .reveal-d2 { transition-delay: 0.20s; }
+        .reveal-d3 { transition-delay: 0.30s; }
+        .reveal-d4 { transition-delay: 0.40s; }
+    </style>
+</head>
+<body>
+
+<!-- ─── NAVBAR ─── -->
+<nav id="navbar" class="fixed w-full z-50 flex items-center justify-between px-6 md:px-10 py-6 bg-white transition-all duration-300">
+    <a th:href="@{/}" class="text-2xl md:text-3xl font-bold tracking-tighter text-black uppercase font-serif">
+        VOGUE<span class="text-gray-300">.</span>
+    </a>
+
+    <div class="hidden md:flex space-x-8 text-xs font-medium uppercase tracking-[0.15em]">
+        <a th:href="@{/category/Women}" class="nav-link hover:text-gray-500 transition">Women</a>
+        <a th:href="@{/category/Men}"   class="nav-link hover:text-gray-500 transition">Men</a>
+        <a th:href="@{/category/Kids}"  class="nav-link hover:text-gray-500 transition">Kids</a>
+    </div>
+
+    <div class="flex items-center space-x-5">
+        <a th:href="@{/favourite/view}" title="Favorites" class="group">
+            <svg class="w-5 h-5 text-gray-500 group-hover:text-red-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+        </a>
+        <a th:href="@{/cart/view}" title="Cart" class="relative group">
+            <svg class="w-5 h-5 text-gray-500 group-hover:text-black transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+        </a>
+        <a th:href="@{/}" class="hidden lg:inline text-[11px] uppercase tracking-[0.15em] font-medium hover:text-gray-500 transition border-b border-transparent hover:border-black pb-0.5">
+            ← Home
+        </a>
+    </div>
+</nav>
+
+<!-- ─── PAGE HEADER STRIP ─── -->
+<div class="bg-black text-white pt-28 pb-12 px-6 text-center">
+    <p class="text-[11px] tracking-[0.4em] uppercase text-gray-400 mb-4">Search Results</p>
+    <h1 class="font-serif text-4xl md:text-6xl font-black mb-5 leading-tight">
+        Results for <span class="keyword-tag font-normal italic" th:text="${keyword}">"query"</span>
+    </h1>
+
+    <!-- Inline search bar — refine query -->
+    <form th:action="@{/search}" method="get" class="flex max-w-md mx-auto mt-6">
+        <input type="text"
+               name="keyword"
+               th:value="${keyword}"
+               placeholder="Search again…"
+               class="search-input flex-1 bg-white/10 border border-white/20 text-white placeholder-gray-500 text-sm px-5 py-3">
+        <button type="submit"
+                class="bg-white text-black px-5 py-3 text-xs uppercase tracking-[0.15em] font-semibold hover:bg-gray-200 transition whitespace-nowrap">
+            Search
+        </button>
+    </form>
+</div>
+
+<!-- ─── FILTER STRIP ─── -->
+<section class="bg-black text-white border-t border-white/5 py-5 px-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-3">
+        <p class="text-[11px] tracking-[0.25em] uppercase text-gray-400">
+            <span id="visibleCount"
+                  th:text="${#lists.isEmpty(products)} ? '0' : ${#lists.size(products)}">0</span>
+            result<span th:unless="${#lists.size(products) == 1}">s</span> found
+        </p>
+        <div class="flex items-center gap-3 flex-wrap">
+            <span class="text-[11px] tracking-[0.2em] uppercase text-gray-500">Filter:</span>
+            <button class="filter-pill active border border-gray-600 text-[10px] uppercase tracking-wider px-4 py-1.5" data-filter="ALL">All</button>
+            <button class="filter-pill border border-gray-600 text-[10px] uppercase tracking-wider px-4 py-1.5" data-filter="WOMEN">Women</button>
+            <button class="filter-pill border border-gray-600 text-[10px] uppercase tracking-wider px-4 py-1.5" data-filter="MEN">Men</button>
+            <button class="filter-pill border border-gray-600 text-[10px] uppercase tracking-wider px-4 py-1.5" data-filter="KIDS">Kids</button>
+        </div>
+    </div>
+</section>
+
+<!-- ─── RESULTS ─── -->
+<section class="py-20 px-6 md:px-10 max-w-7xl mx-auto">
+
+    <!-- ── EMPTY STATE ── -->
+    <div th:if="${#lists.isEmpty(products)}"
+         class="text-center py-24 reveal">
+        <svg class="w-14 h-14 text-gray-200 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-4.35-4.35m2.85-5.65a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <p class="font-serif text-2xl mb-3">No Results Found</p>
+        <p class="text-gray-400 text-sm mb-2">
+            We couldn't find anything matching
+            <span class="font-medium text-black" th:text="'&quot;' + ${keyword} + '&quot;'">"query"</span>
+        </p>
+        <p class="text-gray-400 text-sm mb-10">Try a different term or browse our collections.</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a th:href="@{/category/Women}" class="btn-shop inline-block border-2 border-black text-black text-xs uppercase tracking-[0.2em] font-semibold px-10 py-4">
+                <span>Women</span>
+            </a>
+            <a th:href="@{/category/Men}" class="btn-shop inline-block border-2 border-black text-black text-xs uppercase tracking-[0.2em] font-semibold px-10 py-4">
+                <span>Men</span>
+            </a>
+            <a th:href="@{/category/Kids}" class="btn-shop inline-block border-2 border-black text-black text-xs uppercase tracking-[0.2em] font-semibold px-10 py-4">
+                <span>Kids</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ── PRODUCT GRID — same 4-col as home featured items ── -->
+    <div th:unless="${#lists.isEmpty(products)}">
+
+        <div class="text-center mb-16 reveal">
+            <div class="section-rule"></div>
+            <p class="text-[11px] tracking-[0.35em] uppercase text-gray-400 mb-4">Matching Pieces</p>
+            <h2 class="text-4xl md:text-5xl font-serif font-bold">Search Results</h2>
+        </div>
+
+        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+
+            <div th:each="p : ${products}"
+                 class="product-card group cursor-pointer reveal"
+                 th:data-category="${p.category}">
+                <a th:href="@{/category/{type}/{id}(type=${p.category}, id=${p.id})}" class="block">
+
+                    <div class="overflow-hidden bg-gray-100 aspect-square mb-4 relative">
+                        <img th:src="@{/images/{img}(img=${p.image})}"
+                             class="product-img w-full h-full object-cover"
+                             alt="Product Image">
+
+                        <!-- Quick View -->
+                        <div class="quick-view absolute bottom-4 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] uppercase tracking-[0.2em] font-semibold px-6 py-2 whitespace-nowrap">
+                            Quick View
+                        </div>
+
+                        <!-- Category badge -->
+                        <div class="absolute top-3 left-3 bg-black text-white text-[9px] uppercase tracking-widest px-2 py-1"
+                             th:text="${p.category}">CAT</div>
+                    </div>
+
+                    <h4 class="text-sm font-medium mb-1" th:text="${p.name}">Product Name</h4>
+                    <p class="text-gray-400 text-xs uppercase tracking-wider mb-2" th:text="${p.category}">Category</p>
+                    <p class="text-sm font-semibold">₹<span th:text="${p.price}">0</span></p>
+                </a>
+            </div>
+
+        </div>
+
+        <!-- JS empty state after filtering -->
+        <div id="filterEmpty" class="hidden text-center py-16">
+            <p class="font-serif text-xl mb-3">No matches in this category</p>
+            <p class="text-gray-400 text-sm">Try selecting a different filter above.</p>
+        </div>
+
+        <!-- Back to home -->
+        <div class="mt-16 text-center reveal">
+            <a th:href="@{/}"
+               class="btn-shop inline-block border-2 border-black text-black text-xs uppercase tracking-[0.2em] font-semibold px-12 py-4">
+                <span>← Back to Home</span>
+            </a>
+        </div>
+
+    </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer class="bg-black text-white py-20 mt-4">
+    <div class="max-w-7xl mx-auto px-6 md:px-10">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+            <div>
+                <h4 class="text-xl font-serif font-bold mb-5">VOGUE<span class="text-gray-600">.</span></h4>
+                <p class="text-gray-500 text-xs leading-relaxed">Redefining fashion with timeless elegance and modern sophistication.</p>
+            </div>
+            <div>
+                <h5 class="text-[10px] uppercase tracking-[0.25em] font-semibold mb-5 text-gray-400">Shop</h5>
+                <ul class="space-y-3 text-gray-500 text-xs">
+                    <li><a th:href="@{/category/Women}" class="hover:text-white transition">Women</a></li>
+                    <li><a th:href="@{/category/Men}"   class="hover:text-white transition">Men</a></li>
+                    <li><a th:href="@{/category/Kids}"  class="hover:text-white transition">Kids</a></li>
+                    <li><a href="#" class="hover:text-white transition">Sale</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="text-[10px] uppercase tracking-[0.25em] font-semibold mb-5 text-gray-400">Company</h5>
+                <ul class="space-y-3 text-gray-500 text-xs">
+                    <li><a href="#" class="hover:text-white transition">About Us</a></li>
+                    <li><a href="#" class="hover:text-white transition">Careers</a></li>
+                    <li><a href="#" class="hover:text-white transition">Sustainability</a></li>
+                    <li><a href="#" class="hover:text-white transition">Contact</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="text-[10px] uppercase tracking-[0.25em] font-semibold mb-5 text-gray-400">Follow Us</h5>
+                <div class="flex flex-col space-y-3 text-gray-500 text-xs">
+                    <a href="#" class="hover:text-white transition">Instagram</a>
+                    <a href="#" class="hover:text-white transition">Facebook</a>
+                    <a href="#" class="hover:text-white transition">Twitter</a>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-600 text-xs">
+            <p>&copy; 2026 VOGUE Fashion. All rights reserved.</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" class="hover:text-white transition">Privacy Policy</a>
+                <a href="#" class="hover:text-white transition">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // ── Navbar scroll ──
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('nav-scroll', window.scrollY > 60);
+    }, { passive: true });
+
+    // ── Scroll reveal ──
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer  = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+        });
+    }, { threshold: 0.08 });
+    revealEls.forEach(el => {
+        if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('visible');
+        else observer.observe(el);
+    });
+
+    // ── Category filter pills ──
+    const pills       = document.querySelectorAll('.filter-pill');
+    const cards       = document.querySelectorAll('.product-card');
+    const countEl     = document.getElementById('visibleCount');
+    const filterEmpty = document.getElementById('filterEmpty');
+
+    let activeFilter = 'ALL';
+
+    pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            pills.forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            activeFilter = pill.dataset.filter;
+
+            let shown = 0;
+            cards.forEach(card => {
+                const cat = (card.dataset.category || '').toUpperCase();
+                const match = activeFilter === 'ALL' || cat === activeFilter;
+                card.style.display = match ? '' : 'none';
+                if (match) shown++;
+            });
+
+            if (countEl) countEl.textContent = shown;
+            if (filterEmpty) filterEmpty.classList.toggle('hidden', shown > 0);
+        });
+    });
+</script>
+
+</body>
+</html>

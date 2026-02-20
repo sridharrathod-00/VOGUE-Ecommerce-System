@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><text x='50' y='70' font-size='60' text-anchor='middle' font-family='serif' font-weight='bold' fill='%23fff'>V</text></svg>">
+    <title>VOGUE | Add Product</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body { font-family: 'Inter', sans-serif; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+
+        /* Same fade-in as home page */
+        .fade-in  { animation: fadeIn 1s ease-in both; }
+        .stagger-1 { animation: fadeIn 0.9s ease-in 0.1s both; }
+        .stagger-2 { animation: fadeIn 0.9s ease-in 0.2s both; }
+        .stagger-3 { animation: fadeIn 0.9s ease-in 0.3s both; }
+        .stagger-4 { animation: fadeIn 0.9s ease-in 0.4s both; }
+        .stagger-5 { animation: fadeIn 0.9s ease-in 0.5s both; }
+        .stagger-6 { animation: fadeIn 0.9s ease-in 0.6s both; }
+        .stagger-7 { animation: fadeIn 0.9s ease-in 0.7s both; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .nav-scroll {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255,255,255,0.95);
+        }
+
+        .gradient-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.65), transparent 60%);
+        }
+
+        /* Input focus — lifts like hover-lift cards */
+        .form-input {
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+            outline: none;
+        }
+        .form-input:focus {
+            border-color: #000;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        /* Category card — mirrors shop category grid */
+        .cat-card {
+            transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), box-shadow 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .cat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 32px rgba(0,0,0,0.12);
+        }
+        .cat-card img {
+            transition: transform 0.7s cubic-bezier(0.4,0,0.2,1);
+        }
+        .cat-card:hover img { transform: scale(1.1); }
+        .cat-card .cat-overlay {
+            transition: opacity 0.5s ease;
+        }
+        .cat-card:hover .cat-overlay { opacity: 1 !important; }
+        .cat-card.selected {
+            outline: 3px solid #000;
+            outline-offset: -3px;
+        }
+        .cat-card.selected .cat-check {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .cat-check {
+            opacity: 0;
+            transform: scale(0.7);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        /* File upload zone */
+        .upload-zone {
+            transition: border-color 0.3s, background 0.3s;
+            border: 2px dashed #d1d5db;
+        }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #000;
+            background: #f9fafb;
+        }
+
+        /* Submit button ripple */
+        .submit-btn {
+            position: relative;
+            overflow: hidden;
+            transition: background 0.3s ease;
+        }
+        .submit-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.15);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+        .submit-btn:hover::after { transform: scaleX(1); }
+
+        /* Image preview */
+        #previewWrap { display: none; }
+
+        /* Pulse dot for nav */
+        .pulse-dot::before {
+            content: '';
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            margin-right: 6px;
+            animation: pulseDot 2s infinite;
+        }
+        @keyframes pulseDot {
+            0%,100% { opacity:1; transform:scale(1); }
+            50%      { opacity:.4; transform:scale(1.4); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+<!-- ─── NAVBAR (identical to home page) ─── -->
+<nav id="navbar" class="fixed w-full z-50 flex items-center justify-between px-6 md:px-10 py-5 bg-white shadow-sm transition-all duration-300">
+    <div class="text-2xl md:text-3xl font-bold tracking-tighter text-black uppercase font-serif">
+        VOGUE<span class="text-gray-400">.</span>
+    </div>
+
+    <div class="hidden md:flex items-center space-x-2 text-xs uppercase tracking-[0.25em] text-gray-400 font-medium">
+        <span class="w-8 h-px bg-gray-300 inline-block"></span>
+        <span>Add Product</span>
+        <span class="w-8 h-px bg-gray-300 inline-block"></span>
+    </div>
+
+    <div class="flex items-center space-x-6">
+        <a th:href="@{/admin/dashboard}" class="hidden md:inline-flex items-center gap-2 text-sm uppercase tracking-wide font-medium hover:text-gray-500 transition group">
+            <svg class="w-4 h-4 group-hover:-translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Dashboard
+        </a>
+        <div class="hidden lg:flex items-center space-x-6 border-l pl-6 border-gray-200">
+            <span class="text-xs text-gray-500 uppercase tracking-widest pulse-dot">Admin</span>
+            <a th:href="@{/logout}" class="text-xs uppercase font-bold text-red-500 hover:text-red-700 transition">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ─── HERO (same structure as home page header) ─── -->
+<header class="relative h-[55vh] flex items-center justify-center bg-gray-900 overflow-hidden">
+    <div class="absolute inset-0 z-0">
+        <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=2070"
+             alt="Add Product Banner"
+             class="w-full h-full object-cover opacity-60">
+        <div class="absolute inset-0 gradient-overlay"></div>
+    </div>
+
+    <div class="relative z-10 text-center text-white px-4 fade-in">
+        <p class="text-sm md:text-base tracking-[0.3em] uppercase mb-4 text-gray-300">Catalog Management</p>
+        <h1 class="text-5xl md:text-7xl font-serif mb-6 leading-tight">Add Product</h1>
+        <p class="text-lg md:text-xl tracking-widest uppercase font-light">Expand your collection</p>
+    </div>
+
+    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 text-white animate-bounce">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+        </svg>
+    </div>
+</header>
+
+<!-- ─── FORM SECTION ─── -->
+<section class="py-20 px-6 md:px-10 max-w-4xl mx-auto">
+
+    <!-- Section header — mirrors "Explore / Shop by Category" header -->
+    <div class="text-center mb-16 stagger-1">
+        <p class="text-sm tracking-[0.3em] uppercase text-gray-500 mb-3">New Entry</p>
+        <h2 class="text-4xl md:text-5xl font-serif mb-4">Product Details</h2>
+        <p class="text-gray-600 max-w-xl mx-auto">Fill in the details below to publish a new item to your storefront</p>
+    </div>
+
+    <form th:action="@{/admin/save-product}"
+          method="post"
+          enctype="multipart/form-data"
+          id="productForm">
+
+        <!-- ── NAME ── -->
+        <div class="mb-8 stagger-2">
+            <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
+                Product Name <span class="text-red-500">*</span>
+            </label>
+            <input type="text"
+                   name="name"
+                   placeholder="e.g. Classic Linen Blazer"
+                   class="form-input w-full border-2 border-gray-200 bg-white px-5 py-4 text-sm"
+                   required>
+        </div>
+
+        <!-- ── DESCRIPTION ── -->
+        <div class="mb-8 stagger-3">
+            <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
+                Description
+            </label>
+            <textarea name="description"
+                      placeholder="Materials, fit, styling notes..."
+                      rows="4"
+                      class="form-input w-full border-2 border-gray-200 bg-white px-5 py-4 text-sm resize-none"></textarea>
+        </div>
+
+        <!-- ── PRICE + QUANTITY (two-col like the stats strip) ── -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 stagger-4">
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
+                    Price (₹) <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <span class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 font-semibold select-none">₹</span>
+                    <input type="number"
+                           name="price"
+                           step="0.01"
+                           min="0"
+                           placeholder="0.00"
+                           class="form-input w-full border-2 border-gray-200 bg-white pl-9 pr-5 py-4 text-sm"
+                           required>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
+                    Stock Quantity <span class="text-red-500">*</span>
+                </label>
+                <input type="number"
+                       name="quantity"
+                       min="0"
+                       placeholder="e.g. 50"
+                       class="form-input w-full border-2 border-gray-200 bg-white px-5 py-4 text-sm"
+                       required>
+            </div>
+        </div>
+
+        <!-- ── CATEGORY — mirrors the 3-col shop grid ── -->
+        <div class="mb-10 stagger-5">
+            <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 mb-6">
+                Category <span class="text-red-500">*</span>
+            </label>
+
+            <!-- Hidden native select for form submission -->
+            <select name="category" id="categorySelect" class="sr-only" required>
+                <option value="">Select Category</option>
+                <option value="MEN">Men</option>
+                <option value="WOMEN">Women</option>
+                <option value="KIDS">Kids</option>
+            </select>
+
+            <!-- Visual grid — same 3/4 aspect, same hover pattern as home categories -->
+            <div class="grid grid-cols-3 gap-6">
+
+                <!-- Women -->
+                <div class="cat-card group" data-value="WOMEN">
+                    <div class="overflow-hidden bg-gray-100 aspect-[3/4] relative">
+                        <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=600"
+                             class="w-full h-full object-cover" alt="Women">
+                        <div class="cat-overlay absolute inset-0 bg-black opacity-0" style="opacity:0"></div>
+                        <div class="cat-overlay absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent opacity-0">
+                            <p class="text-white text-xs uppercase tracking-wider">Select →</p>
+                        </div>
+                        <!-- Check badge -->
+                        <div class="cat-check absolute top-3 right-3 bg-black text-white w-7 h-7 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <h3 class="text-sm font-serif font-semibold mb-1">Womenswear</h3>
+                        <p class="text-gray-500 text-xs">450+ Styles</p>
+                    </div>
+                </div>
+
+                <!-- Men -->
+                <div class="cat-card group" data-value="MEN">
+                    <div class="overflow-hidden bg-gray-100 aspect-[3/4] relative">
+                        <img src="https://images.unsplash.com/photo-1505022610485-0249ba5b3675?auto=format&fit=crop&q=80&w=600"
+                             class="w-full h-full object-cover" alt="Men">
+                        <div class="cat-overlay absolute inset-0 bg-black opacity-0" style="opacity:0"></div>
+                        <div class="cat-overlay absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent opacity-0">
+                            <p class="text-white text-xs uppercase tracking-wider">Select →</p>
+                        </div>
+                        <div class="cat-check absolute top-3 right-3 bg-black text-white w-7 h-7 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <h3 class="text-sm font-serif font-semibold mb-1">Menswear</h3>
+                        <p class="text-gray-500 text-xs">320+ Styles</p>
+                    </div>
+                </div>
+
+                <!-- Kids -->
+                <div class="cat-card group" data-value="KIDS">
+                    <div class="overflow-hidden bg-gray-100 aspect-[3/4] relative">
+                        <img src="https://images.unsplash.com/photo-1542037104857-ffbb0b9155fb?auto=format&fit=crop&q=80&w=600"
+                             class="w-full h-full object-cover" alt="Kids">
+                        <div class="cat-overlay absolute inset-0 bg-black opacity-0" style="opacity:0"></div>
+                        <div class="cat-overlay absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent opacity-0">
+                            <p class="text-white text-xs uppercase tracking-wider">Select →</p>
+                        </div>
+                        <div class="cat-check absolute top-3 right-3 bg-black text-white w-7 h-7 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <h3 class="text-sm font-serif font-semibold mb-1">Kids Wear</h3>
+                        <p class="text-gray-500 text-xs">180+ Styles</p>
+                    </div>
+                </div>
+
+            </div>
+            <p id="catError" class="text-red-500 text-xs mt-3 hidden">Please select a category.</p>
+        </div>
+
+        <!-- ── IMAGE UPLOAD ── -->
+        <div class="mb-10 stagger-6">
+            <label class="block text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 mb-3">
+                Product Image <span class="text-red-500">*</span>
+            </label>
+
+            <label for="imageInput"
+                   class="upload-zone flex flex-col items-center justify-center py-12 cursor-pointer bg-white"
+                   id="uploadZone">
+                <svg class="w-10 h-10 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <p id="uploadLabel" class="text-sm text-gray-500 mb-1">Click to upload, or drag & drop</p>
+                <p class="text-xs text-gray-400 uppercase tracking-wider">JPG, PNG — min. 800 × 800 px</p>
+                <input type="file"
+                       name="image"
+                       id="imageInput"
+                       accept="image/*"
+                       class="hidden"
+                       required>
+            </label>
+
+            <!-- Preview — same aspect-square as featured products grid -->
+            <div id="previewWrap" class="mt-5 relative">
+                <div class="overflow-hidden bg-gray-100 aspect-square max-w-xs mx-auto">
+                    <img id="previewImg" src="" alt="Preview" class="w-full h-full object-cover">
+                </div>
+                <button type="button" id="clearImg"
+                        class="mt-3 mx-auto flex items-center gap-2 text-xs uppercase tracking-wider text-gray-500 hover:text-black transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Remove image
+                </button>
+            </div>
+        </div>
+
+        <!-- ── ACTIONS ── -->
+        <div class="flex flex-col md:flex-row gap-4 stagger-7">
+            <button type="submit"
+                    class="submit-btn flex-1 bg-black text-white px-10 py-4 uppercase font-bold tracking-wider hover:bg-gray-900 transition">
+                <svg class="w-5 h-5 inline-block mr-2 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Save Product
+            </button>
+            <a th:href="@{/admin/dashboard}"
+               class="flex-none border-2 border-gray-300 text-gray-700 px-10 py-4 uppercase font-bold tracking-wider hover:bg-gray-100 transition text-center">
+                Cancel
+            </a>
+        </div>
+
+    </form>
+</section>
+
+<!-- ─── FOOTER (identical to home page) ─── -->
+<footer class="bg-black text-white py-16 mt-8">
+    <div class="max-w-7xl mx-auto px-6 md:px-10">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div>
+                <h4 class="text-2xl font-serif mb-4">VOGUE.</h4>
+                <p class="text-gray-400 text-sm leading-relaxed">
+                    Redefining fashion with timeless elegance and modern sophistication.
+                </p>
+            </div>
+            <div>
+                <h5 class="uppercase text-sm font-semibold mb-4 tracking-wider">Admin</h5>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li><a th:href="@{/admin/dashboard}"    class="hover:text-white transition">Dashboard</a></li>
+                    <li><a th:href="@{/admin/add-product}"  class="hover:text-white transition">Add Product</a></li>
+                    <li><a th:href="@{/admin/products}"     class="hover:text-white transition">View Products</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="uppercase text-sm font-semibold mb-4 tracking-wider">Store</h5>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li><a th:href="@{/}" class="hover:text-white transition">View Storefront</a></li>
+                    <li><a th:href="@{/category/Women}" class="hover:text-white transition">Women</a></li>
+                    <li><a th:href="@{/category/Men}"   class="hover:text-white transition">Men</a></li>
+                    <li><a th:href="@{/category/Kids}"  class="hover:text-white transition">Kids</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="uppercase text-sm font-semibold mb-4 tracking-wider">Tips</h5>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li>Use high-res images</li>
+                    <li>Minimum 800 × 800 px</li>
+                    <li>White / neutral background</li>
+                    <li>Include care instructions</li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm">
+            <p>&copy; 2026 VOGUE Fashion Admin. All rights reserved.</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" class="hover:text-white transition">Privacy Policy</a>
+                <a href="#" class="hover:text-white transition">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // ── Navbar scroll (same as home page) ──
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('nav-scroll', window.scrollY > 50);
+        navbar.classList.toggle('shadow-lg', window.scrollY > 50);
+    });
+
+    // ── Category card selection (mirrors the shop grid interaction) ──
+    const catCards = document.querySelectorAll('.cat-card');
+    const catSelect = document.getElementById('categorySelect');
+    const catError  = document.getElementById('catError');
+
+    catCards.forEach(card => {
+        card.addEventListener('click', () => {
+            catCards.forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            catSelect.value = card.dataset.value;
+            catError.classList.add('hidden');
+        });
+    });
+
+    // ── Image upload & preview ──
+    const imageInput  = document.getElementById('imageInput');
+    const previewWrap = document.getElementById('previewWrap');
+    const previewImg  = document.getElementById('previewImg');
+    const uploadLabel = document.getElementById('uploadLabel');
+    const uploadZone  = document.getElementById('uploadZone');
+    const clearBtn    = document.getElementById('clearImg');
+
+    imageInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        uploadLabel.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = e => {
+            previewImg.src = e.target.result;
+            previewWrap.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    });
+
+    clearBtn.addEventListener('click', () => {
+        imageInput.value = '';
+        previewWrap.style.display = 'none';
+        previewImg.src = '';
+        uploadLabel.textContent = 'Click to upload, or drag & drop';
+    });
+
+    // Drag & drop
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    uploadZone.addEventListener('drop', e => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            imageInput.files = dt.files;
+            imageInput.dispatchEvent(new Event('change'));
+        }
+    });
+
+    // ── Form validation ──
+    document.getElementById('productForm').addEventListener('submit', function (e) {
+        if (!catSelect.value) {
+            e.preventDefault();
+            catError.classList.remove('hidden');
+            catError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+</script>
+
+</body>
+</html>

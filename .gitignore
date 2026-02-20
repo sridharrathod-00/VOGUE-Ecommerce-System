@@ -1,0 +1,11 @@
+target/
+uploads/
+application.properties
+.DS_Store
+.classpath
+.project
+.settings/
+*.log
+*.class
+*.jar
+*.war

@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><text x='50' y='70' font-size='60' text-anchor='middle' font-family='serif' font-weight='bold' fill='%23fff'>V</text></svg>">
+    <title>VOGUE | Order Confirmed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --black: #0a0a0a;
+            --gray-light: #f5f4f1;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 300;
+            background: var(--gray-light);
+            color: var(--black);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .font-serif { font-family: 'Playfair Display', serif; }
+
+        /* ── NAV ── */
+        #navbar { transition: background 0.4s ease, padding 0.4s ease; }
+        .nav-scroll {
+            backdrop-filter: blur(14px);
+            background: rgba(250,250,248,0.96) !important;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+        .nav-link { position: relative; text-decoration: none; }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px; left: 0;
+            width: 0; height: 1px;
+            background: var(--black);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        /* ── SUCCESS CHECKMARK ── */
+        .check-circle {
+            width: 88px; height: 88px;
+            border-radius: 50%;
+            background: var(--black);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 2rem;
+            animation: popIn 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.3s both;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.4); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        .check-circle svg {
+            animation: drawCheck 0.5s ease 0.9s both;
+        }
+        @keyframes drawCheck {
+            from { opacity: 0; transform: scale(0.5); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        /* ── CONFETTI DOTS ── */
+        .confetti-wrap {
+            position: absolute; inset: 0;
+            pointer-events: none; overflow: hidden;
+        }
+        .dot {
+            position: absolute;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh)  rotate(720deg); opacity: 0; }
+        }
+
+        /* ── HERO TEXT STAGGER ── */
+        .hero-eyebrow { animation: heroUp 0.9s cubic-bezier(0.22,1,0.36,1) 0.5s  both; }
+        .hero-title   { animation: heroUp 0.9s cubic-bezier(0.22,1,0.36,1) 0.7s  both; }
+        .hero-sub     { animation: heroUp 0.9s cubic-bezier(0.22,1,0.36,1) 0.9s  both; }
+        .hero-ctas    { animation: heroUp 0.9s cubic-bezier(0.22,1,0.36,1) 1.1s  both; }
+        @keyframes heroUp {
+            from { opacity: 0; transform: translateY(28px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── BUTTONS ── */
+        .btn-primary {
+            position: relative; overflow: hidden;
+            transition: color 0.3s ease;
+        }
+        .btn-primary::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: #1a1a1a;
+            transform: scaleX(0); transform-origin: left;
+            transition: transform 0.35s ease;
+            z-index: 0;
+        }
+        .btn-primary:hover::before { transform: scaleX(1); }
+        .btn-primary:hover { color: white; }
+        .btn-primary span { position: relative; z-index: 1; }
+
+        .btn-outline {
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.6);
+        }
+
+        /* ── QUICK LINKS ── */
+        .quick-link {
+            transition: background 0.2s ease, transform 0.25s ease;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+        .quick-link:hover {
+            background: var(--black);
+            color: white;
+            transform: translateY(-4px);
+            border-color: var(--black);
+        }
+        .quick-link:hover svg { stroke: white; }
+        .quick-link:hover p  { color: white; }
+
+        /* ── SECTION RULE ── */
+        .section-rule { width: 40px; height: 1px; background: var(--black); margin: 0 auto 1rem; }
+
+        /* ── SCROLL REVEAL ── */
+        .reveal {
+            opacity: 0; transform: translateY(24px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.visible { opacity: 1; transform: none; }
+        .reveal-d1 { transition-delay: 0.12s; }
+        .reveal-d2 { transition-delay: 0.24s; }
+        .reveal-d3 { transition-delay: 0.36s; }
+    </style>
+</head>
+<body>
+
+<!-- ─── NAVBAR ─── -->
+<nav id="navbar" class="fixed w-full z-50 flex items-center justify-between px-6 md:px-10 py-6 bg-white transition-all duration-300">
+    <a th:href="@{/}" class="text-2xl md:text-3xl font-bold tracking-tighter text-black uppercase font-serif">
+        VOGUE<span class="text-gray-300">.</span>
+    </a>
+
+    <div class="hidden md:flex space-x-8 text-xs font-medium uppercase tracking-[0.15em]">
+        <a th:href="@{/category/Women}" class="nav-link hover:text-gray-500 transition">Women</a>
+        <a th:href="@{/category/Men}"   class="nav-link hover:text-gray-500 transition">Men</a>
+        <a th:href="@{/category/Kids}"  class="nav-link hover:text-gray-500 transition">Kids</a>
+    </div>
+
+    <div class="flex items-center space-x-5">
+        <a th:href="@{/orders}" class="hidden lg:inline text-[11px] uppercase tracking-[0.15em] font-medium hover:text-gray-500 transition border-b border-transparent hover:border-black pb-0.5">
+            My Orders
+        </a>
+        <a th:href="@{/}" class="hidden lg:inline text-[11px] uppercase tracking-[0.15em] font-medium hover:text-gray-500 transition border-b border-transparent hover:border-black pb-0.5">
+            ← Home
+        </a>
+    </div>
+</nav>
+
+<!-- ─── HERO CONFIRMATION ─── -->
+<section class="relative min-h-screen bg-black flex items-center justify-center overflow-hidden pt-24 pb-20 px-6">
+
+    <!-- Confetti dots (JS-generated) -->
+    <div class="confetti-wrap" id="confettiWrap"></div>
+
+    <!-- Grain texture overlay -->
+    <div class="absolute inset-0 opacity-[0.03] pointer-events-none"
+         style="background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><filter id=%22n%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22/></filter><rect width=%22200%22 height=%22200%22 filter=%22url(%23n)%22 opacity=%221%22/></svg>')">
+    </div>
+
+	<div class="relative z-10 text-center text-white max-w-2xl">
+
+	    <div class="check-circle">
+	        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+	            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+	        </svg>
+	    </div>
+
+	    <p class="hero-eyebrow text-[11px] tracking-[0.4em] uppercase text-gray-400 mb-5">
+	        Purchase Confirmed
+	    </p>
+
+	    <div class="hero-eyebrow mb-6 inline-block bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1.5 rounded-full">
+	        <p class="text-[10px] tracking-[0.2em] uppercase text-white">
+	            Ref ID: <span class="font-bold" th:text="${referenceId}">REFERENCE_ID</span>
+	        </p>
+	    </div>
+
+	    <h1 class="hero-title font-serif text-5xl md:text-7xl font-black mb-6 leading-tight">
+	        Order Placed<br><em class="font-normal italic">Successfully</em>
+	    </h1>
+
+	    <p class="hero-sub text-sm tracking-[0.15em] text-gray-400 mb-12 max-w-md mx-auto leading-relaxed">
+	        Thank you for your purchase. Your order is being prepared and you'll receive updates shortly.
+	    </p>
+
+	    <div class="hero-ctas flex flex-col sm:flex-row gap-4 justify-center">
+	        <a th:href="@{/orders}"
+	           class="btn-outline text-white text-xs uppercase tracking-[0.2em] font-semibold px-10 py-4">
+	            View My Orders
+	        </a>
+	        <a th:href="@{/}"
+	           class="btn-primary bg-white text-black text-xs uppercase tracking-[0.2em] font-semibold px-10 py-4">
+	            <span>Continue Shopping</span>
+	        </a>
+	    </div>
+
+	</div>
+</section>
+
+<!-- ─── QUICK LINKS ─── -->
+<section class="py-20 px-6 md:px-10 max-w-5xl mx-auto">
+
+    <div class="text-center mb-14 reveal">
+        <div class="section-rule"></div>
+        <p class="text-[11px] tracking-[0.35em] uppercase text-gray-400 mb-4">What's Next</p>
+        <h2 class="text-3xl md:text-4xl font-serif font-bold">Keep Exploring</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <a th:href="@{/orders}" class="quick-link bg-white p-8 text-center reveal reveal-d1">
+            <svg class="w-8 h-8 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-6h13M9 5h13M5 7h.01M5 12h.01M5 17h.01"/>
+            </svg>
+            <h3 class="text-sm font-semibold uppercase tracking-wider mb-2">Track Your Order</h3>
+            <p class="text-xs text-gray-400">View order status and history</p>
+        </a>
+
+        <a th:href="@{/favourite/view}" class="quick-link bg-white p-8 text-center reveal reveal-d2">
+            <svg class="w-8 h-8 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+            <h3 class="text-sm font-semibold uppercase tracking-wider mb-2">My Favourites</h3>
+            <p class="text-xs text-gray-400">Revisit your saved pieces</p>
+        </a>
+
+        <a th:href="@{/}" class="quick-link bg-white p-8 text-center reveal reveal-d3">
+            <svg class="w-8 h-8 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+            <h3 class="text-sm font-semibold uppercase tracking-wider mb-2">Shop More</h3>
+            <p class="text-xs text-gray-400">Discover new arrivals</p>
+        </a>
+
+    </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer class="bg-black text-white py-20">
+    <div class="max-w-7xl mx-auto px-6 md:px-10">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+            <div>
+                <h4 class="text-xl font-serif font-bold mb-5">VOGUE<span class="text-gray-600">.</span></h4>
+                <p class="text-gray-500 text-xs leading-relaxed">Redefining fashion with timeless elegance and modern sophistication.</p>
+            </div>
+            <div>
+                <h5 class="text-[10px] uppercase tracking-[0.25em] font-semibold mb-5 text-gray-400">Shop</h5>
+                <ul class="space-y-3 text-gray-500 text-xs">
+                    <li><a th:href="@{/category/Women}" class="hover:text-white transition">Women</a></li>
+                    <li><a th:href="@{/category/Men}"   class="hover:text-white transition">Men</a></li>
+                    <li><a th:href="@{/category/Kids}"  class="hover:text-white transition">Kids</a></li>
+                    <li><a href="#" class="hover:text-white transition">Sale</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="text-[10px] uppercase tracking-[0.25em] font-semibold mb-5 text-gray-400">Company</h5>
+                <ul class="space-y-3 text-gray-500 text-xs">
+                    <li><a href="#" class="hover:text-white transition">About Us</a></li>
+                    <li><a href="#" class="hover:text-white transition">Careers</a></li>
+                    <li><a href="#" class="hover:text-white transition">Sustainability</a></li>
+                    <li><a href="#" class="hover:text-white transition">Contact</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="text-[10px] uppercase tracking-[0.25em] font-semibold mb-5 text-gray-400">Follow Us</h5>
+                <div class="flex flex-col space-y-3 text-gray-500 text-xs">
+                    <a href="#" class="hover:text-white transition">Instagram</a>
+                    <a href="#" class="hover:text-white transition">Facebook</a>
+                    <a href="#" class="hover:text-white transition">Twitter</a>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-600 text-xs">
+            <p>&copy; 2026 VOGUE Fashion. All rights reserved.</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" class="hover:text-white transition">Privacy Policy</a>
+                <a href="#" class="hover:text-white transition">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // ── Navbar scroll ──
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('nav-scroll', window.scrollY > 60);
+    }, { passive: true });
+
+    // ── Scroll reveal ──
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer  = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+        });
+    }, { threshold: 0.08 });
+    revealEls.forEach(el => {
+        if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('visible');
+        else observer.observe(el);
+    });
+
+    // ── Confetti dots ──
+    const wrap   = document.getElementById('confettiWrap');
+    const colors = ['#ffffff', '#cccccc', '#888888', '#444444', '#f0ede8'];
+    for (let i = 0; i < 40; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        dot.style.left     = Math.random() * 100 + 'vw';
+        dot.style.top      = '-10px';
+        dot.style.background = colors[Math.floor(Math.random() * colors.length)];
+        dot.style.width    = (Math.random() * 6 + 3) + 'px';
+        dot.style.height   = dot.style.width;
+        dot.style.animationDuration  = (Math.random() * 4 + 3) + 's';
+        dot.style.animationDelay     = (Math.random() * 3) + 's';
+        dot.style.opacity  = Math.random() * 0.6 + 0.2;
+        wrap.appendChild(dot);
+    }
+</script>
+
+</body>
+</html>

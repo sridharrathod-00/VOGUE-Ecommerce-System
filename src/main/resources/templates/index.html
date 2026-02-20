@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><text x='50' y='70' font-size='60' text-anchor='middle' font-family='serif' font-weight='bold' fill='%23fff'>V</text></svg>">
+    <title>VOGUE | Modern Fashion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --black: #0a0a0a;
+            --white: #fafafa;
+            --gray-mid: #8a8a8a;
+            --gray-light: #f5f4f1;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 300;
+            background: var(--gray-light);
+            color: var(--black);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .font-serif { font-family: 'Playfair Display', serif; }
+
+        /* ── NAV ── */
+        #navbar {
+            transition: background 0.4s ease, box-shadow 0.4s ease, padding 0.4s ease;
+        }
+        .nav-scroll {
+            backdrop-filter: blur(14px);
+            background: rgba(250,250,248,0.96) !important;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+
+        /* Nav link underline sweep */
+        .nav-link {
+            position: relative;
+            text-decoration: none;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px; left: 0;
+            width: 0; height: 1px;
+            background: var(--black);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        /* ── HERO ── */
+        .gradient-overlay {
+            background: linear-gradient(
+                to top,
+                rgba(0,0,0,0.72) 0%,
+                rgba(0,0,0,0.18) 50%,
+                transparent 100%
+            );
+        }
+
+        .hero-img {
+            transition: transform 12s ease;
+            transform: scale(1.06);
+        }
+        header:hover .hero-img { transform: scale(1); }
+
+        /* Hero text stagger */
+        .hero-eyebrow  { animation: heroUp 1.1s cubic-bezier(0.22,1,0.36,1) 0.2s both; }
+        .hero-title    { animation: heroUp 1.1s cubic-bezier(0.22,1,0.36,1) 0.45s both; }
+        .hero-subtitle { animation: heroUp 1.1s cubic-bezier(0.22,1,0.36,1) 0.65s both; }
+        .hero-cta      { animation: heroUp 1.1s cubic-bezier(0.22,1,0.36,1) 0.85s both; }
+
+        @keyframes heroUp {
+            from { opacity: 0; transform: translateY(32px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── CATEGORY CARDS ── */
+        .cat-card {
+            transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+        }
+        .cat-card:hover { transform: translateY(-14px); }
+
+        .cat-card-img {
+            transition: transform 0.8s cubic-bezier(0.4,0,0.2,1);
+        }
+        .cat-card:hover .cat-card-img { transform: scale(1.1); }
+
+        .cat-dark-overlay {
+            transition: opacity 0.5s ease;
+            opacity: 0;
+        }
+        .cat-card:hover .cat-dark-overlay { opacity: 0.22; }
+
+        .cat-label {
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        .cat-card:hover .cat-label { opacity: 1; transform: translateY(0); }
+
+        /* ── FEATURED PRODUCTS ── */
+        .product-card {
+            transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+        }
+        .product-card:hover { transform: translateY(-8px); }
+
+        .product-img {
+            transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
+        }
+        .product-card:hover .product-img { transform: scale(1.06); }
+
+        .quick-view {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        .product-card:hover .quick-view { opacity: 1; transform: translateY(0); }
+
+        /* ── SCROLL REVEAL ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        .reveal.visible { opacity: 1; transform: none; }
+
+        .reveal-d1 { transition-delay: 0.10s; }
+        .reveal-d2 { transition-delay: 0.20s; }
+        .reveal-d3 { transition-delay: 0.30s; }
+        .reveal-d4 { transition-delay: 0.40s; }
+
+        /* ── BUTTONS ── */
+        .btn-primary {
+            position: relative;
+            overflow: hidden;
+            transition: color 0.35s ease;
+        }
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--black);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.35s ease;
+            z-index: 0;
+        }
+        .btn-primary:hover::before { transform: scaleX(1); }
+        .btn-primary:hover { color: #fff; }
+        .btn-primary span { position: relative; z-index: 1; }
+
+        /* ── SEARCH INPUT ── */
+        .search-wrap input:focus { outline: none; border-color: var(--black); }
+
+        /* ── NEWSLETTER ── */
+        .newsletter-input:focus { outline: none; border-color: var(--black); }
+
+        /* ── ABOUT STATS ── */
+        .stat-num {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        /* ── SCROLL INDICATOR ── */
+        .scroll-dot {
+            width: 28px; height: 44px;
+            border: 1.5px solid rgba(255,255,255,0.5);
+            border-radius: 14px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 7px;
+        }
+        .scroll-dot::before {
+            content: '';
+            width: 4px; height: 8px;
+            background: white;
+            border-radius: 2px;
+            animation: scrollDot 1.8s infinite;
+        }
+        @keyframes scrollDot {
+            0%   { transform: translateY(0);   opacity: 1; }
+            80%  { transform: translateY(14px); opacity: 0; }
+            100% { transform: translateY(0);   opacity: 0; }
+        }
+
+        /* ── CART BADGE ── */
+        .cart-badge {
+            animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes popIn {
+            from { transform: scale(0); }
+            to   { transform: scale(1); }
+        }
+
+        /* ── SECTION RULE ── */
+        .section-rule {
+            width: 40px; height: 1px;
+            background: var(--black);
+            margin: 0 auto 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ─── NAVIGATION ─── -->
+<nav id="navbar" class="fixed w-full z-50 flex items-center justify-between px-6 md:px-10 py-6 bg-white transition-all duration-300">
+
+    <div class="text-2xl md:text-3xl font-bold tracking-tighter text-black uppercase font-serif">
+        VOGUE<span class="text-gray-300">.</span>
+    </div>
+
+    <div class="hidden md:flex space-x-8 text-xs font-medium uppercase tracking-[0.15em]">
+        <a href="#shop"     class="nav-link hover:text-gray-500 transition">Shop</a>
+        <a href="#shop"     class="nav-link hover:text-gray-500 transition">Collections</a>
+        <a href="#featured" class="nav-link hover:text-gray-500 transition">Featured</a>
+        <a href="#about"    class="nav-link hover:text-gray-500 transition">About</a>
+    </div>
+
+    <!-- Desktop Search -->
+    <form th:action="@{/search}" method="get" class="search-wrap hidden md:flex items-center border border-gray-200 rounded-full px-4 py-2 mr-4 hover:border-gray-400 transition">
+        <input type="text" name="keyword" placeholder="Search products…" class="text-xs px-2 w-44 bg-transparent">
+        <button type="submit">
+            <svg class="w-4 h-4 text-gray-400 hover:text-black transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m2.85-5.65a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+        </button>
+    </form>
+
+    <div class="flex items-center space-x-4">
+
+        <!-- Logged-in state -->
+        <div th:if="${loggedInUser != null}" class="flex items-center space-x-5">
+            <a th:href="@{/favourite/view}" title="Favorites" class="group">
+                <svg class="w-5 h-5 text-gray-600 group-hover:text-red-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+            </a>
+            <a th:href="@{/cart/view}" title="Cart" class="relative group">
+                <svg class="w-5 h-5 text-gray-600 group-hover:text-black transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                </svg>
+                <span th:if="${cartCount > 0}" th:text="${cartCount}"
+                      class="cart-badge absolute -top-1.5 -right-1.5 bg-black text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-medium"></span>
+            </a>
+            <a th:href="@{/orders}" title="My Orders" class="group">
+                <svg class="w-5 h-5 text-gray-600 group-hover:text-black transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-6h13M9 5h13M5 7h.01M5 12h.01M5 17h.01"/>
+                </svg>
+            </a>
+
+            <div class="hidden lg:flex items-center space-x-5 border-l pl-5 border-gray-100">
+                <span class="text-[11px] text-gray-400 uppercase tracking-[0.18em]">
+                    Hi, <span class="font-semibold text-black" th:text="${loggedInUser.name}">User</span>
+                </span>
+                <a th:href="@{/profile}" class="text-[11px] uppercase tracking-[0.15em] font-medium border-b border-black pb-0.5 hover:text-gray-500 hover:border-gray-400 transition">Profile</a>
+                <a th:href="@{/logout}" class="text-[11px] uppercase tracking-[0.15em] font-semibold text-red-500 hover:text-red-700 transition">Logout</a>
+            </div>
+        </div>
+
+        <!-- Guest state -->
+        <div th:unless="${loggedInUser != null}" class="flex items-center space-x-4">
+            <a th:href="@{/login}" class="hidden md:inline text-[11px] uppercase tracking-[0.15em] font-medium hover:text-gray-500 transition border-b border-transparent hover:border-black pb-0.5">Login</a>
+            <a th:href="@{/register}" class="bg-black text-white text-[11px] uppercase tracking-[0.15em] font-medium px-6 py-2.5 rounded-full hover:bg-gray-800 transition shadow-sm">Register</a>
+        </div>
+
+    </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<header class="relative h-screen flex items-center justify-center bg-black overflow-hidden">
+    <div class="absolute inset-0 z-0">
+        <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=85&w=2070"
+             alt="Fashion Banner"
+             class="hero-img w-full h-full object-cover opacity-75">
+        <div class="absolute inset-0 gradient-overlay"></div>
+    </div>
+
+    <div class="relative z-10 text-center text-white px-4">
+        <p class="hero-eyebrow text-[11px] md:text-xs tracking-[0.4em] uppercase mb-6 text-gray-300">Spring Collection 2026</p>
+        <h1 class="hero-title text-6xl md:text-8xl lg:text-[10rem] font-serif font-black mb-6 leading-none tracking-tight">
+            New Season
+        </h1>
+        <p class="hero-subtitle text-sm md:text-base mb-12 tracking-[0.35em] uppercase font-light text-gray-200">
+            Elegance in every stitch
+        </p>
+        <a href="#shop" class="hero-cta btn-primary inline-block bg-white text-black text-xs uppercase tracking-[0.2em] font-semibold px-14 py-4 hover:text-white transition">
+            <span>Explore Collection</span>
+        </a>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="absolute bottom-10 left-1/2 -translate-x-1/2">
+        <div class="scroll-dot"></div>
+    </div>
+</header>
+
+<!-- ─── FEATURED BANNER ─── -->
+<section class="bg-black text-white py-16 px-6 text-center">
+    <div class="max-w-4xl mx-auto reveal">
+        <h2 class="text-3xl md:text-5xl font-serif font-bold mb-4">Limited Edition</h2>
+        <p class="text-gray-400 mb-8 text-sm tracking-wide max-w-xl mx-auto leading-relaxed">
+            Discover our exclusive capsule collection. Only 100 pieces available worldwide.
+        </p>
+        <a href="#" class="inline-block border border-white/60 text-xs uppercase tracking-[0.2em] font-medium px-10 py-3 hover:bg-white hover:text-black transition">
+            View Collection
+        </a>
+    </div>
+</section>
+
+<!-- ─── CATEGORIES ─── -->
+<section class="py-28 px-6 md:px-10 max-w-7xl mx-auto" id="shop">
+    <div class="text-center mb-20 reveal">
+        <div class="section-rule"></div>
+        <p class="text-[11px] tracking-[0.35em] uppercase text-gray-400 mb-4">Explore</p>
+        <h2 class="text-4xl md:text-5xl font-serif font-bold mb-4">Shop by Category</h2>
+        <p class="text-gray-500 text-sm max-w-xl mx-auto leading-relaxed">Curated collections that define modern elegance</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        <!-- Womenswear -->
+        <a th:href="@{/category/Women}" class="cat-card group block reveal reveal-d1">
+            <div class="overflow-hidden bg-gray-100 aspect-[3/4] relative">
+                <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=1000"
+                     class="cat-card-img w-full h-full object-cover">
+                <div class="cat-dark-overlay absolute inset-0 bg-black"></div>
+                <div class="cat-label absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/75 to-transparent">
+                    <p class="text-white text-xs uppercase tracking-[0.2em]">Explore Collection →</p>
+                </div>
+            </div>
+            <div class="mt-5 text-center">
+                <h3 class="text-lg font-serif font-bold mb-1">Womenswear</h3>
+                <p class="text-gray-400 text-xs uppercase tracking-wider">450+ Styles</p>
+            </div>
+        </a>
+
+        <!-- Menswear -->
+        <a th:href="@{/category/Men}" class="cat-card group block reveal reveal-d2">
+            <div class="overflow-hidden bg-gray-100 aspect-[3/4] relative">
+                <img src="https://images.unsplash.com/photo-1505022610485-0249ba5b3675?auto=format&fit=crop&q=80&w=1000"
+                     class="cat-card-img w-full h-full object-cover">
+                <div class="cat-dark-overlay absolute inset-0 bg-black"></div>
+                <div class="cat-label absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/75 to-transparent">
+                    <p class="text-white text-xs uppercase tracking-[0.2em]">Explore Collection →</p>
+                </div>
+            </div>
+            <div class="mt-5 text-center">
+                <h3 class="text-lg font-serif font-bold mb-1">Menswear</h3>
+                <p class="text-gray-400 text-xs uppercase tracking-wider">320+ Styles</p>
+            </div>
+        </a>
+
+        <!-- Kids -->
+        <a th:href="@{/category/Kids}" class="cat-card group block reveal reveal-d3">
+            <div class="overflow-hidden bg-gray-100 aspect-[3/4] relative">
+                <img src="https://images.unsplash.com/photo-1542037104857-ffbb0b9155fb?auto=format&fit=crop&q=80&w=1000"
+                     class="cat-card-img w-full h-full object-cover">
+                <div class="cat-dark-overlay absolute inset-0 bg-black"></div>
+                <div class="cat-label absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/75 to-transparent">
+                    <p class="text-white text-xs uppercase tracking-[0.2em]">Shop Kids Wear →</p>
+                </div>
+            </div>
+            <div class="mt-5 text-center">
+                <h3 class="text-lg font-serif font-bold mb-1">Kids Wear</h3>
+                <p class="text-gray-400 text-xs uppercase tracking-wider">180+ Styles</p>
+            </div>
+        </a>
+
+    </div>
+</section>
+
+<!-- ─── FEATURED PRODUCTS ─── -->
+<section class="py-28 bg-white" id="featured">
+    <div class="max-w-7xl mx-auto px-6 md:px-10">
+
+        <div class="text-center mb-20 reveal">
+            <div class="section-rule"></div>
+            <p class="text-[11px] tracking-[0.35em] uppercase text-gray-400 mb-4">Trending</p>
+            <h2 class="text-4xl md:text-5xl font-serif font-bold mb-4">Featured Items</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div th:each="p : ${products}" class="product-card group cursor-pointer reveal">
+                <a th:href="@{/category/{type}/{id}(type=${p.category}, id=${p.id})}" class="block">
+                    <div class="overflow-hidden bg-gray-100 aspect-square mb-4 relative">
+                        <img th:src="@{/images/{img}(img=${p.image})}"
+                             class="product-img w-full h-full object-cover"
+                             alt="Product Image">
+                        <div class="quick-view absolute bottom-4 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] uppercase tracking-[0.2em] font-semibold px-6 py-2 whitespace-nowrap">
+                            Quick View
+                        </div>
+                    </div>
+                    <h4 class="text-sm font-medium mb-1" th:text="${p.name}">Product Name</h4>
+                    <p class="text-gray-400 text-xs uppercase tracking-wider mb-2" th:text="${p.category}">Category</p>
+                    <p class="text-sm font-semibold">₹<span th:text="${p.price}">0</span></p>
+                </a>
+            </div>
+
+            <div th:if="${#lists.isEmpty(products)}" class="col-span-4 text-center text-gray-400 py-16">
+                <p class="text-sm uppercase tracking-wider">No featured products available.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── ABOUT ─── -->
+<section class="py-28 bg-[#f5f4f1]" id="about">
+    <div class="max-w-6xl mx-auto px-6 md:px-10 text-center">
+        <div class="reveal">
+            <div class="section-rule"></div>
+            <p class="text-[11px] tracking-[0.35em] uppercase text-gray-400 mb-4">Our Story</p>
+            <h2 class="text-4xl md:text-5xl font-serif font-bold mb-8">Crafted with Passion</h2>
+            <p class="text-gray-600 text-base max-w-2xl mx-auto leading-relaxed mb-20">
+                Since 2010, VOGUE has been redefining modern fashion with timeless pieces
+                that blend elegance and innovation. Every garment tells a story of craftsmanship,
+                quality, and sustainable luxury.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mt-4 border-t border-gray-200 pt-16">
+            <div class="reveal reveal-d1">
+                <div class="stat-num mb-3">500K+</div>
+                <p class="text-gray-400 text-xs uppercase tracking-[0.25em]">Happy Customers</p>
+            </div>
+            <div class="reveal reveal-d2">
+                <div class="stat-num mb-3">50+</div>
+                <p class="text-gray-400 text-xs uppercase tracking-[0.25em]">Countries Worldwide</p>
+            </div>
+            <div class="reveal reveal-d3">
+                <div class="stat-num mb-3">15+</div>
+                <p class="text-gray-400 text-xs uppercase tracking-[0.25em]">Years of Excellence</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── NEWSLETTER ─── -->
+<section class="py-24 bg-white" id="collections">
+    <div class="max-w-xl mx-auto px-6 text-center reveal">
+        <div class="section-rule"></div>
+        <h3 class="text-3xl md:text-4xl font-serif font-bold mb-4">Stay in Touch</h3>
+        <p class="text-gray-400 text-sm mb-10 leading-relaxed">Subscribe to receive updates, access to exclusive deals, and more.</p>
+        <div class="flex flex-col md:flex-row gap-0">
+            <input type="email"
+                   placeholder="Enter your email"
+                   class="newsletter-input flex-1 border border-gray-200 border-r-0 px-6 py-3.5 text-sm focus:border-black transition">
+            <button class="bg-black text-white text-xs uppercase tracking-[0.2em] font-semibold px-8 py-3.5 hover:bg-gray-800 transition whitespace-nowrap">
+                Subscribe
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer class="bg-black text-white py-20">
+    <div class="max-w-7xl mx-auto px-6 md:px-10">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+
+            <div>
+                <h4 class="text-xl font-serif font-bold mb-5">VOGUE<span class="text-gray-600">.</span></h4>
+                <p class="text-gray-500 text-xs leading-relaxed">
+                    Redefining fashion with timeless elegance and modern sophistication.
+                </p>
+            </div>
+
+            <div>
+                <h5 class="text-[10px] uppercase tracking-[0.25em] font-semibold mb-5 text-gray-400">Shop</h5>
+                <ul class="space-y-3 text-gray-500 text-xs">
+                    <li><a href="#" class="hover:text-white transition">Women</a></li>
+                    <li><a href="#" class="hover:text-white transition">Men</a></li>
+                    <li><a href="#" class="hover:text-white transition">Accessories</a></li>
+                    <li><a href="#" class="hover:text-white transition">Sale</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-[10px] uppercase tracking-[0.25em] font-semibold mb-5 text-gray-400">Company</h5>
+                <ul class="space-y-3 text-gray-500 text-xs">
+                    <li><a href="#" class="hover:text-white transition">About Us</a></li>
+                    <li><a href="#" class="hover:text-white transition">Careers</a></li>
+                    <li><a href="#" class="hover:text-white transition">Sustainability</a></li>
+                    <li><a href="#" class="hover:text-white transition">Contact</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5 class="text-[10px] uppercase tracking-[0.25em] font-semibold mb-5 text-gray-400">Follow Us</h5>
+                <div class="flex flex-col space-y-3 text-gray-500 text-xs">
+                    <a href="#" class="hover:text-white transition">Instagram</a>
+                    <a href="#" class="hover:text-white transition">Facebook</a>
+                    <a href="#" class="hover:text-white transition">Twitter</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-600 text-xs">
+            <p>&copy; 2026 VOGUE Fashion. All rights reserved.</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" class="hover:text-white transition">Privacy Policy</a>
+                <a href="#" class="hover:text-white transition">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // ── Smooth scroll ──
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', function(e) {
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) { e.preventDefault(); target.scrollIntoView({ behavior:'smooth', block:'start' }); }
+        });
+    });
+
+    // ── Navbar shrink on scroll ──
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('nav-scroll', window.scrollY > 60);
+    }, { passive: true });
+
+    // ── Scroll reveal ──
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer  = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+    revealEls.forEach(el => observer.observe(el));
+
+    // Reveal elements already in view on load
+    revealEls.forEach(el => {
+        if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('visible');
+    });
+</script>
+
+</body>
+</html>

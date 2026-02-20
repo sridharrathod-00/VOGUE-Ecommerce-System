@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><text x='50' y='70' font-size='60' text-anchor='middle' font-family='serif' font-weight='bold' fill='%23fff'>V</text></svg>">
+    <title>VOGUE | All Products</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body { font-family: 'Inter', sans-serif; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+
+        .fade-in   { animation: fadeIn 1s ease-in both; }
+        .stagger-1 { animation: fadeIn 0.9s ease-in 0.10s both; }
+        .stagger-2 { animation: fadeIn 0.9s ease-in 0.20s both; }
+        .stagger-3 { animation: fadeIn 0.9s ease-in 0.30s both; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card grid — same as home "Featured Items" */
+        .product-card {
+            transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+        }
+        .product-card:hover { transform: translateY(-8px); }
+        .product-card img   { transition: transform 0.7s cubic-bezier(0.4,0,0.2,1); }
+        .product-card:hover img { transform: scale(1.06); }
+
+        /* Action overlay — mirrors Quick View button */
+        .action-overlay {
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+        .product-card:hover .action-overlay { opacity: 1; }
+
+        /* Dark overlay on hover */
+        .img-overlay {
+            transition: opacity 0.5s ease;
+            opacity: 0;
+        }
+        .product-card:hover .img-overlay { opacity: 0.18; }
+
+        /* Nav */
+        .nav-scroll {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255,255,255,0.95);
+        }
+        .gradient-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.65), transparent 60%);
+        }
+
+        /* Search input */
+        .search-input:focus { outline: none; border-color: #000; }
+
+        /* Filter pill */
+        .filter-pill {
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+        .filter-pill:hover  { background:#000; color:#fff; }
+        .filter-pill.active { background:#000; color:#fff; }
+
+        /* Confirm modal */
+        #confirmModal {
+            display: none;
+            position: fixed; inset: 0; z-index: 200;
+            background: rgba(0,0,0,0.6);
+            align-items: center; justify-content: center;
+        }
+        #confirmModal.open { display: flex; }
+
+        /* Pulse dot */
+        .pulse-dot::before {
+            content: '';
+            display: inline-block;
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #22c55e; margin-right: 6px;
+            animation: pulseDot 2s infinite;
+        }
+        @keyframes pulseDot {
+            0%,100% { opacity:1; transform:scale(1); }
+            50%      { opacity:.4; transform:scale(1.4); }
+        }
+
+        /* Empty state */
+        #emptyState { display: none; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+<!-- ─── CONFIRM DELETE MODAL ─── -->
+<div id="confirmModal">
+    <div class="bg-white max-w-md w-full mx-4 p-10 text-center">
+        <h3 class="text-2xl font-serif mb-3">Delete Product?</h3>
+        <p class="text-gray-500 text-sm mb-8">This action cannot be undone. The product will be permanently removed from your catalog.</p>
+        <div class="flex gap-4 justify-center">
+            <a id="confirmDeleteBtn"
+               href="#"
+               class="bg-black text-white px-8 py-3 uppercase text-sm font-bold tracking-wider hover:bg-red-600 transition">
+                Yes, Delete
+            </a>
+            <button onclick="closeModal()"
+                    class="border-2 border-gray-300 text-gray-700 px-8 py-3 uppercase text-sm font-bold tracking-wider hover:bg-gray-100 transition">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ─── NAVBAR ─── -->
+<nav id="navbar" class="fixed w-full z-50 flex items-center justify-between px-6 md:px-10 py-5 bg-white shadow-sm transition-all duration-300">
+    <div class="text-2xl md:text-3xl font-bold tracking-tighter text-black uppercase font-serif">
+        VOGUE<span class="text-gray-400">.</span>
+    </div>
+
+    <div class="hidden md:flex items-center space-x-2 text-xs uppercase tracking-[0.25em] text-gray-400 font-medium">
+        <span class="w-8 h-px bg-gray-300 inline-block"></span>
+        <span>All Products</span>
+        <span class="w-8 h-px bg-gray-300 inline-block"></span>
+    </div>
+
+    <div class="flex items-center space-x-6">
+        <a th:href="@{/admin/dashboard}" class="hidden md:inline-flex items-center gap-2 text-sm uppercase tracking-wide font-medium hover:text-gray-500 transition group">
+            <svg class="w-4 h-4 group-hover:-translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Dashboard
+        </a>
+        <div class="hidden lg:flex items-center space-x-6 border-l pl-6 border-gray-200">
+            <span class="text-xs text-gray-500 uppercase tracking-widest pulse-dot">Admin</span>
+            <a th:href="@{/logout}" class="text-xs uppercase font-bold text-red-500 hover:text-red-700 transition">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<header class="relative h-[50vh] flex items-center justify-center bg-gray-900 overflow-hidden">
+    <div class="absolute inset-0 z-0">
+        <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&q=80&w=2070"
+             alt="Products" class="w-full h-full object-cover opacity-50">
+        <div class="absolute inset-0 gradient-overlay"></div>
+    </div>
+    <div class="relative z-10 text-center text-white px-4 fade-in">
+        <p class="text-sm md:text-base tracking-[0.3em] uppercase mb-4 text-gray-300">Catalog Management</p>
+        <h1 class="text-5xl md:text-7xl font-serif mb-6 leading-tight">All Products</h1>
+        <p class="text-lg md:text-xl tracking-widest uppercase font-light">
+            <span id="heroCount">—</span> items in your collection
+        </p>
+    </div>
+    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 text-white animate-bounce">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+        </svg>
+    </div>
+</header>
+
+<!-- ─── TOOLBAR ─── -->
+<section class="bg-black text-white py-8 px-6 md:px-10">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+
+        <!-- Filter pills -->
+        <div class="flex items-center gap-3 flex-wrap">
+            <span class="text-xs uppercase tracking-[0.2em] text-gray-400 mr-2">Filter:</span>
+            <button class="filter-pill active border border-gray-600 text-xs uppercase tracking-wider px-4 py-2" data-filter="ALL">All</button>
+            <button class="filter-pill border border-gray-600 text-xs uppercase tracking-wider px-4 py-2" data-filter="WOMEN">Women</button>
+            <button class="filter-pill border border-gray-600 text-xs uppercase tracking-wider px-4 py-2" data-filter="MEN">Men</button>
+            <button class="filter-pill border border-gray-600 text-xs uppercase tracking-wider px-4 py-2" data-filter="KIDS">Kids</button>
+        </div>
+
+        <!-- Search + Add -->
+        <div class="flex items-center gap-4">
+            <div class="relative">
+                <input type="text"
+                       id="searchInput"
+                       placeholder="Search products..."
+                       class="search-input bg-white/10 border border-white/20 text-white placeholder-gray-400 text-sm px-4 py-2 pr-9 w-52 transition">
+                <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M16.5 9.5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </div>
+            <a th:href="@{/admin/add-product}"
+               class="bg-white text-black text-xs uppercase font-bold tracking-wider px-6 py-2 hover:bg-gray-200 transition whitespace-nowrap">
+                + Add Product
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ─── PRODUCT GRID — same 4-col as "Featured Items" ─── -->
+<section class="py-20 px-6 md:px-10 max-w-7xl mx-auto">
+
+    <!-- Section header — mirrors home page -->
+    <div class="text-center mb-16 stagger-1">
+        <p class="text-sm tracking-[0.3em] uppercase text-gray-500 mb-3">Inventory</p>
+        <h2 class="text-4xl md:text-5xl font-serif mb-4">Product Catalog</h2>
+        <p class="text-gray-600 max-w-xl mx-auto">
+            Showing <span id="visibleCount" class="font-semibold text-black">—</span> products
+        </p>
+    </div>
+
+    <!-- Grid -->
+    <div id="productGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 stagger-2">
+
+        <div th:each="p : ${products}"
+             class="product-card group cursor-pointer"
+             th:data-name="${p.name}"
+             th:data-category="${p.category}">
+
+            <!-- Image — same aspect-square as featured products -->
+            <div class="overflow-hidden bg-gray-100 aspect-square mb-4 relative">
+                <img th:src="@{/images/{img}(img=${p.image})}"
+                     class="w-full h-full object-cover"
+                     alt="Product Image">
+
+                <!-- Dark overlay — same as home -->
+                <div class="img-overlay absolute inset-0 bg-black"></div>
+
+                <!-- Action buttons — replaces "Quick View" -->
+                <div class="action-overlay absolute bottom-4 left-0 right-0 flex justify-center gap-2 px-4">
+                    <a th:href="@{/admin/update}"
+                       class="bg-white text-black px-4 py-2 text-xs uppercase font-bold tracking-wide hover:bg-black hover:text-white transition whitespace-nowrap">
+                        Edit
+                    </a>
+                    <button th:onclick="'openModal(\'/admin/delete/' + ${p.id} + '\')'"
+                            class="bg-red-600 text-white px-4 py-2 text-xs uppercase font-bold tracking-wide hover:bg-red-700 transition whitespace-nowrap">
+                        Delete
+                    </button>
+                </div>
+
+                <!-- Category badge -->
+                <div class="absolute top-3 left-3 bg-black text-white text-[10px] uppercase tracking-widest px-2 py-1"
+                     th:text="${p.category}">
+                    Category
+                </div>
+            </div>
+
+            <!-- Product info — same typography as home featured items -->
+            <h4 class="font-medium mb-1 text-sm" th:text="${p.name}">Product Name</h4>
+            <p class="text-gray-500 text-xs mb-2 uppercase tracking-wider" th:text="${p.category}">Category</p>
+            <div class="flex items-center justify-between">
+                <p class="font-semibold">₹<span th:text="${p.price}">0</span></p>
+                <div class="flex items-center gap-3">
+                    <a th:href="@{/admin/update}"
+                       class="text-xs text-gray-500 hover:text-black transition uppercase tracking-wide underline underline-offset-2">
+                        Edit
+                    </a>
+                    <button th:onclick="'openModal(\'/admin/delete/' + ${p.id} + '\')'"
+                            class="text-xs text-red-500 hover:text-red-700 transition uppercase tracking-wide underline underline-offset-2">
+                        Delete
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="emptyState" class="text-center py-24">
+        <svg class="w-16 h-16 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+        </svg>
+        <h3 class="text-2xl font-serif mb-3">No Products Found</h3>
+        <p class="text-gray-500 text-sm mb-8">Try a different filter or search term</p>
+        <a th:href="@{/admin/add-product}"
+           class="inline-block bg-black text-white px-10 py-3 uppercase text-sm font-bold tracking-wider hover:bg-gray-800 transition">
+            Add First Product
+        </a>
+    </div>
+
+    <!-- Thymeleaf empty check -->
+    <div th:if="${#lists.isEmpty(products)}" class="text-center py-24 stagger-2">
+        <svg class="w-16 h-16 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+        </svg>
+        <h3 class="text-2xl font-serif mb-3">No Products Yet</h3>
+        <p class="text-gray-500 text-sm mb-8">Start building your catalog</p>
+        <a th:href="@{/admin/add-product}"
+           class="inline-block bg-black text-white px-10 py-3 uppercase text-sm font-bold tracking-wider hover:bg-gray-800 transition">
+            Add First Product
+        </a>
+    </div>
+
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer class="bg-black text-white py-16">
+    <div class="max-w-7xl mx-auto px-6 md:px-10">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div>
+                <h4 class="text-2xl font-serif mb-4">VOGUE.</h4>
+                <p class="text-gray-400 text-sm leading-relaxed">Redefining fashion with timeless elegance and modern sophistication.</p>
+            </div>
+            <div>
+                <h5 class="uppercase text-sm font-semibold mb-4 tracking-wider">Admin</h5>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li><a th:href="@{/admin/dashboard}"   class="hover:text-white transition">Dashboard</a></li>
+                    <li><a th:href="@{/admin/add-product}" class="hover:text-white transition">Add Product</a></li>
+                    <li><a th:href="@{/admin/products}"    class="hover:text-white transition">All Products</a></li>
+                    <li><a th:href="@{/admin/update}"      class="hover:text-white transition">Update Product</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="uppercase text-sm font-semibold mb-4 tracking-wider">Store</h5>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li><a th:href="@{/}" class="hover:text-white transition">View Storefront</a></li>
+                    <li><a th:href="@{/category/Women}" class="hover:text-white transition">Women</a></li>
+                    <li><a th:href="@{/category/Men}"   class="hover:text-white transition">Men</a></li>
+                    <li><a th:href="@{/category/Kids}"  class="hover:text-white transition">Kids</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="uppercase text-sm font-semibold mb-4 tracking-wider">System</h5>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li class="text-green-400">● All Systems Active</li>
+                    <li>Version 2.0.1</li>
+                    <li>Season: Spring 2026</li>
+                    <li><a th:href="@{/logout}" class="text-red-400 hover:text-red-300 transition font-semibold uppercase text-xs tracking-wider">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm">
+            <p>&copy; 2026 VOGUE Fashion Admin. All rights reserved.</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" class="hover:text-white transition">Privacy Policy</a>
+                <a href="#" class="hover:text-white transition">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // ── Navbar scroll ──
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('nav-scroll', window.scrollY > 50);
+        navbar.classList.toggle('shadow-lg',  window.scrollY > 50);
+    });
+
+    // ── Confirm delete modal ──
+    const modal         = document.getElementById('confirmModal');
+    const confirmBtn    = document.getElementById('confirmDeleteBtn');
+
+    function openModal(deleteUrl) {
+        confirmBtn.href = deleteUrl;
+        modal.classList.add('open');
+    }
+    function closeModal() { modal.classList.remove('open'); }
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // ── Filter & Search ──
+    const cards       = document.querySelectorAll('.product-card');
+    const searchInput = document.getElementById('searchInput');
+    const filterPills = document.querySelectorAll('.filter-pill');
+    const emptyState  = document.getElementById('emptyState');
+    const visibleCount = document.getElementById('visibleCount');
+    const heroCount    = document.getElementById('heroCount');
+
+    let activeFilter = 'ALL';
+
+    // Set total count on load
+    heroCount.textContent    = cards.length;
+    visibleCount.textContent = cards.length;
+
+    function applyFilters() {
+        const keyword = searchInput.value.toLowerCase().trim();
+        let shown = 0;
+
+        cards.forEach(card => {
+            const name     = (card.dataset.name     || '').toLowerCase();
+            const category = (card.dataset.category || '').toUpperCase();
+
+            const matchFilter  = activeFilter === 'ALL' || category === activeFilter;
+            const matchSearch  = !keyword || name.includes(keyword) || category.toLowerCase().includes(keyword);
+
+            if (matchFilter && matchSearch) {
+                card.style.display = '';
+                shown++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        visibleCount.textContent = shown;
+        emptyState.style.display = shown === 0 && cards.length > 0 ? 'block' : 'none';
+    }
+
+    filterPills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            filterPills.forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            activeFilter = pill.dataset.filter;
+            applyFilters();
+        });
+    });
+
+    searchInput.addEventListener('input', applyFilters);
+</script>
+
+</body>
+</html>

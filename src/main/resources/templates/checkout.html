@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><text x='50' y='70' font-size='60' text-anchor='middle' font-family='serif' font-weight='bold' fill='%23fff'>V</text></svg>">
+    <title>VOGUE | Checkout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        :root { --black: #0a0a0a; --gray-light: #f5f4f1; }
+        body { font-family: 'DM Sans', sans-serif; font-weight: 300; background: var(--gray-light); color: var(--black); -webkit-font-smoothing: antialiased; }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        #navbar { transition: background 0.4s ease, padding 0.4s ease; }
+        .nav-scroll { backdrop-filter: blur(14px); background: rgba(250,250,248,0.96) !important; box-shadow: 0 1px 0 rgba(0,0,0,0.08); padding-top: 1rem !important; padding-bottom: 1rem !important; }
+        .nav-link { position: relative; text-decoration: none; }
+        .nav-link::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 1px; background: var(--black); transition: width 0.3s ease; }
+        .nav-link:hover::after { width: 100%; }
+        .form-input { transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease; outline: none; }
+        .form-input:focus { border-color: var(--black); box-shadow: 0 4px 16px rgba(0,0,0,0.06); transform: translateY(-2px); }
+        .btn-order { position: relative; overflow: hidden; transition: color 0.3s ease; }
+        .btn-order::before { content: ''; position: absolute; inset: 0; background: #1a1a1a; transform: scaleX(0); transform-origin: left; transition: transform 0.35s ease; z-index: 0; }
+        .btn-order:hover::before { transform: scaleX(1); }
+        .btn-order span { position: relative; z-index: 1; }
+        .step-done  { background: var(--black); color: white; border-color: var(--black); }
+        .step-active{ border-color: var(--black); color: var(--black); }
+        .step-idle  { border-color: #d1d5db; color: #9ca3af; }
+        .step-line  { flex: 1; height: 1px; background: #e5e7eb; margin: 0 8px; align-self: center; }
+        .step-line.done { background: var(--black); }
+        .order-row { transition: background 0.2s ease; }
+        .order-row:hover { background: #fafaf8; }
+        .section-rule { width: 40px; height: 1px; background: var(--black); margin-bottom: 1rem; }
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .reveal.visible { opacity: 1; transform: none; }
+        .reveal-d1 { transition-delay: 0.15s; }
+    </style>
+</head>
+<body>
+
+<nav id="navbar" class="fixed w-full z-50 flex items-center justify-between px-6 md:px-10 py-6 bg-white transition-all duration-300">
+    <a th:href="@{/}" class="text-2xl md:text-3xl font-bold tracking-tighter text-black uppercase font-serif">VOGUE<span class="text-gray-300">.</span></a>
+    <div class="hidden md:flex space-x-8 text-xs font-medium uppercase tracking-[0.15em]">
+        <a th:href="@{/category/Women}" class="nav-link hover:text-gray-500 transition">Women</a>
+        <a th:href="@{/category/Men}"   class="nav-link hover:text-gray-500 transition">Men</a>
+        <a th:href="@{/category/Kids}"  class="nav-link hover:text-gray-500 transition">Kids</a>
+    </div>
+    <div class="flex items-center space-x-5">
+        <a th:href="@{/favourite/view}" class="group"><svg class="w-5 h-5 text-gray-500 group-hover:text-red-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg></a>
+        <a th:href="@{/cart/view}" class="relative group"><svg class="w-5 h-5 text-gray-500 group-hover:text-black transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg></a>
+        <a th:href="@{/}" class="hidden lg:inline text-[11px] uppercase tracking-[0.15em] font-medium hover:text-gray-500 transition border-b border-transparent hover:border-black pb-0.5">← Home</a>
+    </div>
+</nav>
+
+<div class="bg-black text-white pt-28 pb-12 px-6 text-center">
+    <p class="text-[11px] tracking-[0.4em] uppercase text-gray-400 mb-3">Almost There</p>
+    <h1 class="font-serif text-5xl md:text-6xl font-black mb-3">Checkout</h1>
+    <p class="text-xs tracking-[0.25em] uppercase text-gray-400">Secure &amp; encrypted transaction</p>
+</div>
+
+<div class="bg-white border-b border-gray-100">
+    <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-center gap-0">
+        <div class="flex items-center gap-2">
+            <div class="step-done w-7 h-7 rounded-full border-2 flex items-center justify-center text-[10px] font-bold"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg></div>
+            <span class="text-[11px] uppercase tracking-[0.15em] font-medium">Cart</span>
+        </div>
+        <div class="step-line done w-16 md:w-24"></div>
+        <div class="flex items-center gap-2">
+            <div class="step-active w-7 h-7 rounded-full border-2 flex items-center justify-center text-[10px] font-bold">2</div>
+            <span class="text-[11px] uppercase tracking-[0.15em] font-bold">Checkout</span>
+        </div>
+        <div class="step-line w-16 md:w-24"></div>
+        <div class="flex items-center gap-2">
+            <div class="step-idle w-7 h-7 rounded-full border-2 flex items-center justify-center text-[10px]">3</div>
+            <span class="text-[11px] uppercase tracking-[0.15em] text-gray-400">Confirmed</span>
+        </div>
+    </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-6 md:px-10 py-12">
+    <div class="grid md:grid-cols-2 gap-8 items-start">
+        <div class="bg-white p-8 reveal">
+            <div class="section-rule"></div>
+            <p class="text-[11px] uppercase tracking-[0.25em] text-gray-400 mb-8">Billing Details</p>
+
+            <form id="checkoutForm" th:action="@{/cart/place-order}" method="post" class="space-y-5" onsubmit="return handlePayment(event)">
+                
+                <input type="hidden" id="razorpayOrderId" name="razorpayOrderId">
+                <input type="hidden" id="razorpayPaymentId" name="razorpayPaymentId">
+                <input type="hidden" id="razorpaySignature" name="razorpaySignature">
+
+                <div>
+                    <label class="block text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-2">Full Name *</label>
+                    <input type="text" name="fullName" placeholder="e.g. Priya Sharma" class="form-input w-full border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm" required>
+                </div>
+                <div>
+                    <label class="block text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-2">Address *</label>
+                    <input type="text" name="address" placeholder="Street, Building, Apartment" class="form-input w-full border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-2">City *</label>
+                        <input type="text" name="city" placeholder="e.g. Mumbai" class="form-input w-full border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm" required>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] uppercase tracking-[0.18em] text-gray-400 mb-2">Zip Code *</label>
+                        <input type="text" name="zip" placeholder="e.g. 400001" class="form-input w-full border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm" required>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4 pt-2">
+                    <div class="flex-1 h-px bg-gray-100"></div>
+                    <span class="text-[10px] uppercase tracking-[0.2em] text-gray-300">Payment Method</span>
+                    <div class="flex-1 h-px bg-gray-100"></div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <label class="payment-opt border-2 border-black bg-black text-white p-3 text-center cursor-pointer">
+                        <input type="radio" name="payment" value="COD" class="hidden" checked required>
+                        <svg class="w-5 h-5 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        <span class="text-[9px] uppercase tracking-wider font-semibold">COD</span>
+                    </label>
+                    <label class="payment-opt border-2 border-gray-200 p-3 text-center cursor-pointer hover:border-black transition">
+                         <input type="radio" name="payment" value="UPI" class="hidden">
+                        <svg class="w-5 h-5 mx-auto mb-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                        <span class="text-[9px] uppercase tracking-wider text-gray-500">UPI</span>
+                    </label>
+                    <label class="payment-opt border-2 border-gray-200 p-3 text-center cursor-pointer hover:border-black transition">
+                        <input type="radio" name="payment" value="CARD" class="hidden">
+                        <svg class="w-5 h-5 mx-auto mb-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                        <span class="text-[9px] uppercase tracking-wider text-gray-500">Card</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-order w-full bg-black text-white text-xs uppercase tracking-[0.2em] font-semibold py-4 mt-2">
+                    <span>Place Order</span>
+                </button>
+            </form>
+        </div>
+
+        <div class="bg-white p-8 sticky top-28 reveal reveal-d1">
+            <div class="section-rule"></div>
+            <p class="text-[11px] uppercase tracking-[0.25em] text-gray-400 mb-6">Order Summary</p>
+            <div class="mb-6">
+                <div th:each="item : ${cart.items}" class="order-row flex justify-between items-start py-4 border-b border-gray-100 px-1">
+                    <div class="flex-1 pr-4">
+                        <h4 class="text-sm font-medium mb-1" th:text="${item.product.name}">Product Name</h4>
+                        <p class="text-[11px] text-gray-400">₹<span th:text="${item.product.price}">0</span> × <span th:text="${item.quantity}">1</span></p>
+                    </div>
+                    <p class="text-sm font-semibold whitespace-nowrap">₹<span th:text="${item.product.price * item.quantity}">0</span></p>
+                </div>
+            </div>
+            <div class="space-y-3 text-sm mb-6">
+                <div class="flex justify-between"><span class="text-gray-400">Subtotal</span><span class="font-medium">₹<span id="displayTotal" th:text="${total}">0</span></span></div>
+                <div class="flex justify-between"><span class="text-gray-400">Shipping</span><span class="font-medium text-green-600">Free</span></div>
+            </div>
+            <div class="border-t border-gray-100 pt-4">
+                <div class="flex justify-between items-baseline">
+                    <span class="text-xs uppercase tracking-wider text-gray-400">Total</span>
+                    <span class="font-serif text-3xl font-bold">₹<span th:text="${total}">0</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+
+<script th:inline="javascript">
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => { navbar.classList.toggle('nav-scroll', window.scrollY > 60); }, { passive: true });
+
+    // Payment method UI toggle
+    document.querySelectorAll('.payment-opt').forEach(opt => {
+        opt.addEventListener('click', () => {
+            document.querySelectorAll('.payment-opt').forEach(o => {
+                o.classList.remove('border-black', 'bg-black', 'text-white');
+                o.classList.add('border-gray-200');
+                o.querySelector('svg').classList.add('text-gray-400');
+                o.querySelector('svg').classList.remove('text-white');
+                o.querySelector('span').classList.add('text-gray-500');
+                o.querySelector('span').classList.remove('text-white', 'font-semibold');
+            });
+            opt.classList.add('border-black', 'bg-black', 'text-white');
+            opt.classList.remove('border-gray-200');
+            opt.querySelector('svg').classList.remove('text-gray-400');
+            opt.querySelector('svg').classList.add('text-white');
+            opt.querySelector('span').classList.remove('text-gray-500');
+            opt.querySelector('span').classList.add('text-white', 'font-semibold');
+            opt.querySelector('input').checked = true;
+        });
+    });
+
+	// REPLACED: RAZORPAY INTEGRATION LOGIC WITH DEMO MODE
+	    function handlePayment(event) {
+	        const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+	        
+	        // 1. If Cash on Delivery, let the form submit normally
+	        if (paymentMethod === 'COD') {
+	            return true;
+	        }
+
+	        // 2. Prevent normal form submission to simulate the payment gateway popup
+	        event.preventDefault();
+
+	        // Visual Feedback: Change button state
+	        const btn = event.target.querySelector('button');
+	        const originalText = btn.innerHTML;
+	        btn.innerHTML = "<span>Connecting to Secure Gateway...</span>";
+	        btn.style.opacity = "0.7";
+	        btn.disabled = true;
+
+	        setTimeout(() => {
+	            // Simulate the user completing a transaction in a popup
+	            const isSuccess = confirm("VOGUE SECURE PAYMENT\n\nSimulate successful UPI/Card transaction?");
+	            
+	            if (isSuccess) {
+	                // Fill the hidden fields with "Fake" IDs so your Controller receives data
+	                // This ensures the Order status becomes "SUCCESS" in your database
+	                document.getElementById('razorpayOrderId').value = "ORDER_DEMO_" + Math.random().toString(36).substr(2, 9);
+	                document.getElementById('razorpayPaymentId').value = "PAYID_DEMO_" + Date.now();
+	                document.getElementById('razorpaySignature').value = "SIG_DEMO_9988776655";
+	                
+	                // Submit the form to your /cart/place-order endpoint
+	                document.getElementById('checkoutForm').submit();
+	            } else {
+	                // Reset the button if the user "cancels" the demo payment
+	                btn.innerHTML = originalText;
+	                btn.style.opacity = "1";
+	                btn.disabled = false;
+	                alert("Payment simulation cancelled.");
+	            }
+	        }, 1500); // 1.5 second delay to mimic network latency
+
+	        return false;
+	    }
+
+    // Scroll reveal logic
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    }, { threshold: 0.05 });
+    revealEls.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

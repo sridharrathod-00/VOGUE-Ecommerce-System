@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><text x='50' y='70' font-size='60' text-anchor='middle' font-family='serif' font-weight='bold' fill='%23fff'>V</text></svg>">
+    <title>VOGUE | My Orders</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :root {
+            --black: #0a0a0a;
+            --gray-light: #f5f4f1;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 300;
+            background: var(--gray-light);
+            color: var(--black);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .font-serif { font-family: 'Playfair Display', serif; }
+
+        /* ── NAV ── */
+        #navbar { transition: background 0.4s ease, padding 0.4s ease; }
+        .nav-scroll {
+            backdrop-filter: blur(14px);
+            background: rgba(250,250,248,0.96) !important;
+            box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+        .nav-link { position: relative; text-decoration: none; }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px; left: 0;
+            width: 0; height: 1px;
+            background: var(--black);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        /* ── ORDER ROW ── */
+        .order-row {
+            transition: background 0.2s ease, transform 0.3s ease;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .order-row:hover { background: #fafaf8; transform: translateX(4px); }
+        .order-row:last-child { border-bottom: none; }
+
+        /* ── STATUS BADGES ── */
+        .status-placed    { background: #000;    color: #fff; }
+        .status-shipped   { background: #1d4ed8; color: #fff; }
+        .status-delivered { background: #15803d; color: #fff; }
+        .status-cancelled { background: #b91c1c; color: #fff; }
+
+        /* ── VIEW LINK ── */
+        .view-link {
+            transition: gap 0.2s ease;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .view-link svg { transition: transform 0.2s ease; }
+        .view-link:hover svg { transform: translateX(4px); }
+
+        /* ── CTA BUTTON ── */
+        .btn-shop {
+            position: relative; overflow: hidden;
+            transition: color 0.3s ease;
+        }
+        .btn-shop::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: var(--black);
+            transform: scaleX(0); transform-origin: left;
+            transition: transform 0.35s ease;
+            z-index: 0;
+        }
+        .btn-shop:hover::before { transform: scaleX(1); }
+        .btn-shop:hover { color: white; }
+        .btn-shop span { position: relative; z-index: 1; }
+
+        /* ── SECTION RULE ── */
+        .section-rule { width: 40px; height: 1px; background: var(--black); margin-bottom: 1rem; }
+
+        /* ── SCROLL REVEAL ── */
+        .reveal {
+            opacity: 0; transform: translateY(24px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.visible { opacity: 1; transform: none; }
+        .reveal-d1 { transition-delay: 0.10s; }
+    </style>
+</head>
+<body>
+
+<!-- ─── NAVBAR ─── -->
+<nav id="navbar" class="fixed w-full z-50 flex items-center justify-between px-6 md:px-10 py-6 bg-white transition-all duration-300">
+    <a th:href="@{/}" class="text-2xl md:text-3xl font-bold tracking-tighter text-black uppercase font-serif">
+        VOGUE<span class="text-gray-300">.</span>
+    </a>
+
+    <div class="hidden md:flex space-x-8 text-xs font-medium uppercase tracking-[0.15em]">
+        <a th:href="@{/category/Women}" class="nav-link hover:text-gray-500 transition">Women</a>
+        <a th:href="@{/category/Men}"   class="nav-link hover:text-gray-500 transition">Men</a>
+        <a th:href="@{/category/Kids}"  class="nav-link hover:text-gray-500 transition">Kids</a>
+    </div>
+
+    <div class="flex items-center space-x-5">
+        <a th:href="@{/favourite/view}" title="Favorites" class="group">
+            <svg class="w-5 h-5 text-gray-500 group-hover:text-red-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+        </a>
+        <a th:href="@{/cart/view}" title="Cart" class="relative group">
+            <svg class="w-5 h-5 text-gray-500 group-hover:text-black transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+        </a>
+        <a th:href="@{/profile}" class="hidden lg:inline text-[11px] uppercase tracking-[0.15em] font-medium hover:text-gray-500 transition border-b border-transparent hover:border-black pb-0.5">
+            My Account
+        </a>
+    </div>
+</nav>
+
+<!-- ─── PAGE HEADER STRIP ─── -->
+<div class="bg-black text-white pt-28 pb-12 px-6 text-center">
+    <p class="text-[11px] tracking-[0.4em] uppercase text-gray-400 mb-3">Your History</p>
+    <h1 class="font-serif text-5xl md:text-6xl font-black mb-3">My Orders</h1>
+    <p class="text-xs tracking-[0.25em] uppercase text-gray-400">Track and manage your purchases</p>
+</div>
+
+<!-- ─── BREADCRUMB ─── -->
+<div class="px-6 md:px-10 max-w-5xl mx-auto pt-6 pb-0">
+    <p class="text-[11px] uppercase tracking-[0.2em] text-gray-400">
+        <a th:href="@{/}" class="hover:text-black transition">Home</a>
+        <span class="mx-2 text-gray-300">/</span>
+        <a th:href="@{/profile}" class="hover:text-black transition">My Account</a>
+        <span class="mx-2 text-gray-300">/</span>
+        <span class="text-gray-600">My Orders</span>
+    </p>
+</div>
+
+<!-- ─── MAIN ─── -->
+<main class="max-w-5xl mx-auto px-6 md:px-10 py-12">
+
+    <!-- ── EMPTY STATE ── -->
+    <div th:if="${#lists.isEmpty(orders)}"
+         class="bg-white text-center py-28 reveal">
+        <svg class="w-14 h-14 text-gray-200 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-6h13M9 5h13M5 7h.01M5 12h.01M5 17h.01"/>
+        </svg>
+        <p class="font-serif text-2xl mb-3">No Orders Yet</p>
+        <p class="text-gray-400 text-sm mb-10">You haven't placed any orders. Start shopping now.</p>
+        <a th:href="@{/}" class="btn-shop inline-block border-2 border-black text-black text-xs uppercase tracking-[0.2em] font-semibold px-12 py-4">
+            <span>Explore Collections</span>
+        </a>
+    </div>
+
+    <!-- ── ORDERS LIST ── -->
+    <div th:unless="${#lists.isEmpty(orders)}" class="reveal">
+
+        <!-- Section header -->
+        <div class="mb-8">
+            <div class="section-rule"></div>
+            <p class="text-[11px] uppercase tracking-[0.25em] text-gray-400">All Orders</p>
+        </div>
+
+        <!-- Column labels -->
+        <div class="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-black text-white mb-0">
+            <div class="col-span-2">
+                <p class="text-[10px] uppercase tracking-[0.2em] font-medium">Order ID</p>
+            </div>
+            <div class="col-span-3">
+                <p class="text-[10px] uppercase tracking-[0.2em] font-medium">Date</p>
+            </div>
+            <div class="col-span-3 text-center">
+                <p class="text-[10px] uppercase tracking-[0.2em] font-medium">Status</p>
+            </div>
+            <div class="col-span-2 text-right">
+                <p class="text-[10px] uppercase tracking-[0.2em] font-medium">Total</p>
+            </div>
+            <div class="col-span-2 text-right">
+                <p class="text-[10px] uppercase tracking-[0.2em] font-medium">Details</p>
+            </div>
+        </div>
+
+        <!-- Order rows -->
+        <div class="bg-white">
+            <div th:each="order : ${orders}"
+                 class="order-row grid grid-cols-12 gap-4 items-center px-6 py-5">
+
+                <!-- Order ID -->
+                <div class="col-span-6 md:col-span-2">
+                    <p class="text-[10px] uppercase tracking-wider text-gray-400 md:hidden mb-1">Order</p>
+                    <p class="text-sm font-semibold">#<span th:text="${order.id}">000</span></p>
+                </div>
+
+                <!-- Date -->
+                <div class="col-span-6 md:col-span-3 text-right md:text-left">
+                    <p class="text-[10px] uppercase tracking-wider text-gray-400 md:hidden mb-1">Date</p>
+                    <p class="text-xs text-gray-500" th:text="${order.orderDate}">—</p>
+                </div>
+
+                <!-- Status -->
+                <div class="col-span-6 md:col-span-3 md:text-center">
+                    <span class="inline-block text-[9px] uppercase tracking-[0.15em] font-bold px-3 py-1"
+                          th:text="${order.status}"
+                          th:classappend="${order.status.name() == 'PLACED'}    ? 'status-placed'    :
+                                         (${order.status.name() == 'SHIPPED'}   ? 'status-shipped'   :
+                                         (${order.status.name() == 'DELIVERED'} ? 'status-delivered' : 'status-cancelled'))">
+                        PLACED
+                    </span>
+                </div>
+
+                <!-- Total -->
+                <div class="col-span-3 md:col-span-2 text-right">
+                    <p class="text-sm font-semibold">₹<span th:text="${order.totalAmount}">0</span></p>
+                </div>
+
+                <!-- View details -->
+                <div class="col-span-3 md:col-span-2 text-right">
+                    <a th:href="@{/orders/{id}(id=${order.id})}"
+                       class="view-link text-[11px] uppercase tracking-[0.15em] font-medium text-black hover:text-gray-500 transition">
+                        View
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Continue shopping -->
+        <div class="mt-8 flex justify-between items-center reveal reveal-d1">
+            <a th:href="@{/profile}"
+               class="text-[11px] uppercase tracking-[0.15em] text-gray-400 hover:text-black transition underline underline-offset-2">
+                ← My Account
+            </a>
+            <a th:href="@{/}"
+               class="btn-shop inline-block border-2 border-black text-black text-xs uppercase tracking-[0.2em] font-semibold px-10 py-3">
+                <span>Continue Shopping</span>
+            </a>
+        </div>
+
+    </div>
+</main>
+
+<!-- ─── FOOTER ─── -->
+<footer class="bg-black text-white py-20 mt-8">
+    <div class="max-w-7xl mx-auto px-6 md:px-10">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+            <div>
+                <h4 class="text-xl font-serif font-bold mb-5">VOGUE<span class="text-gray-600">.</span></h4>
+                <p class="text-gray-500 text-xs leading-relaxed">Redefining fashion with timeless elegance and modern sophistication.</p>
+            </div>
+            <div>
+                <h5 class="text-[10px] uppercase tracking-[0.25em] font-semibold mb-5 text-gray-400">Shop</h5>
+                <ul class="space-y-3 text-gray-500 text-xs">
+                    <li><a th:href="@{/category/Women}" class="hover:text-white transition">Women</a></li>
+                    <li><a th:href="@{/category/Men}"   class="hover:text-white transition">Men</a></li>
+                    <li><a th:href="@{/category/Kids}"  class="hover:text-white transition">Kids</a></li>
+                    <li><a href="#" class="hover:text-white transition">Sale</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="text-[10px] uppercase tracking-[0.25em] font-semibold mb-5 text-gray-400">Company</h5>
+                <ul class="space-y-3 text-gray-500 text-xs">
+                    <li><a href="#" class="hover:text-white transition">About Us</a></li>
+                    <li><a href="#" class="hover:text-white transition">Careers</a></li>
+                    <li><a href="#" class="hover:text-white transition">Sustainability</a></li>
+                    <li><a href="#" class="hover:text-white transition">Contact</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="text-[10px] uppercase tracking-[0.25em] font-semibold mb-5 text-gray-400">Follow Us</h5>
+                <div class="flex flex-col space-y-3 text-gray-500 text-xs">
+                    <a href="#" class="hover:text-white transition">Instagram</a>
+                    <a href="#" class="hover:text-white transition">Facebook</a>
+                    <a href="#" class="hover:text-white transition">Twitter</a>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-600 text-xs">
+            <p>&copy; 2026 VOGUE Fashion. All rights reserved.</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" class="hover:text-white transition">Privacy Policy</a>
+                <a href="#" class="hover:text-white transition">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // ── Navbar scroll ──
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('nav-scroll', window.scrollY > 60);
+    }, { passive: true });
+
+    // ── Scroll reveal ──
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer  = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+        });
+    }, { threshold: 0.05 });
+    revealEls.forEach(el => {
+        if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('visible');
+        else observer.observe(el);
+    });
+</script>
+
+</body>
+</html>
