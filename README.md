@@ -47,3 +47,17 @@ Spring Boot MVC Architecture:
 ## Author
 Sridhar Rathod  
 Java Full Stack Developer (Fresher)
+
+## Screenshots
+
+### Login Page
+![Login](Login.png)
+
+### Home Page
+![Home](Home.png)
+
+### Admin Dashboard
+![Admin](ADMIN.png)
+
+### Orders
+![Orders](Order.png)
